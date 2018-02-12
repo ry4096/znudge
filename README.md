@@ -1,4 +1,4 @@
-# ABOUT:
+* ABOUT:
 
 ZNudge is a client side mod that tries to reduce the effect of lag.
 It's essentially just an improved version of cl_timenudge.
@@ -9,12 +9,12 @@ your shots will hit. This mod may be a reinvention of some of the work
 by the authors of instaunlagged.
 
 
-# INSTALLATION:
+* INSTALLATION:
 
 To install, just copy the zzznudge_v1.pk3 file into your baseq3 folder.
 
 
-# CVARS:
+* CVARS:
 
 This mod has the following cvars:
 
@@ -32,7 +32,7 @@ This mod has the following cvars:
 	to aim closer to this ball than their projected future position.
 
 
-# FUTURE PLANS:
+* FUTURE PLANS:
 
 This mod can be improved by predicting player movement more accurately.
 In this first version, it just assumes players move in a straight line forever
@@ -40,11 +40,11 @@ when running, and don't steer in midair when flying. If you have any ideas,
 you are more than welcome to send them to me, or to try them out yourself.
 
 
-# AUTHOR:
+* AUTHOR:
 
 I am the quake player, ///y///. You can contact me by email: ry4096@gmail.com
 
-# LICENSE:
+* LICENSE:
 
 GPL. This mod was created by modifying the code provided here:
 https://github.com/id-Software/Quake-III-Arena
