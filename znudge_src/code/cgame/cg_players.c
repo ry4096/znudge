@@ -2221,17 +2221,21 @@ int CG_LightVerts( vec3_t normal, int numVerts, polyVert_t *verts )
 	return qtrue;
 }
 
+// ZNUDGE BEGIN
 /*
 ===============
-CG_Player_fx
+CG_Player_
+
+This is the normal CG_Player function.
 ===============
 */
-void CG_Player_fx( centity_t *cent, int renderfx ) {
+void CG_Player_( centity_t *cent ) {
 	clientInfo_t	*ci;
 	refEntity_t		legs;
 	refEntity_t		torso;
 	refEntity_t		head;
 	int				clientNum;
+	int				renderfx;
 	qboolean		shadow;
 	float			shadowPlane;
 #ifdef MISSIONPACK
@@ -2259,9 +2263,10 @@ void CG_Player_fx( centity_t *cent, int renderfx ) {
 	}
 
 	// get the player model information
+	renderfx = 0;
 	if ( cent->currentState.number == cg.snap->ps.clientNum) {
 		if (!cg.renderingThirdPerson) {
-			renderfx |= RF_THIRD_PERSON;			// only draw in mirrors
+			renderfx = RF_THIRD_PERSON;			// only draw in mirrors
 		} else {
 			if (cg_cameraMode.integer) {
 				return;
@@ -2575,9 +2580,44 @@ void CG_Player_fx( centity_t *cent, int renderfx ) {
 	CG_PlayerPowerups( cent, &torso );
 }
 
+
+
+/*
+===============
+ZN_PredictOrigin
+
+Predict's the origin of the player cent after nudge seconds
+have elapsed. This function will be improved over time...
+===============
+*/
+void ZN_PredictOrigin( centity_t* cent, float nudge, vec3_t predictedOrigin ) {
+	vec3_t mins = {-15, -15, -24}, maxs = {15, 15, 32};
+	trace_t	trace;
+
+	predictedOrigin[0] = cent->lerpOrigin[0] + nudge*cent->currentState.pos.trDelta[0];
+	predictedOrigin[1] = cent->lerpOrigin[1] + nudge*cent->currentState.pos.trDelta[1];
+	predictedOrigin[2] = cent->lerpOrigin[2] + nudge*cent->currentState.pos.trDelta[2];
+
+	if (cent->currentState.groundEntityNum == -1) {
+		// In midair
+		predictedOrigin[2] -= nudge*nudge*zn_gravity.value/2.0;
+	}
+
+	trap_CM_BoxTrace( &trace, cent->lerpOrigin, predictedOrigin, mins, maxs, 0, MASK_PLAYERSOLID );
+
+	predictedOrigin[0] = trace.endpos[0];
+	predictedOrigin[1] = trace.endpos[1];
+	predictedOrigin[2] = trace.endpos[2];
+}
+
+
+
+
 /*
 ===============
 CG_Player
+
+This is the new CG_Player function.
 ===============
 */
 void CG_Player( centity_t *cent ) {
@@ -2585,37 +2625,17 @@ void CG_Player( centity_t *cent ) {
 	if (znudge.integer == 0 ||
 		cg.clientNum == cent->currentState.number ||
 		cent->currentState.eFlags & EF_DEAD ) {
-		CG_Player_fx( cent, 0 );
+
+		CG_Player_( cent );
 	}
 	else {
 		vec3_t lerpOrigin;
 		vec3_t predictedOrigin;
-		vec3_t mins = {-15, -15, 0}, maxs = {15, 15, 2};
-		trace_t	trace;
 		int ping;
 		float nudge;
 
-#if 0
-		nudge = znudge.integer/1000.0;
-#endif
-
-#if 1
-		//ping = cg.time - cg.latestSnapshotTime;
-
-		// Ok this works!
 		ping = cg.snap ? cg.snap->ping : 0;
 		nudge = (ping + cg.frametime)/1000.0;
-
-/*
-		CG_Printf("cg.time=%f, latestSnapshotTime=%f, frametime=%f, ping=%d, nudge = %f\n",
-				cg.time/1000.0, 
-				cg.latestSnapshotTime/1000.0,
-				cg.frametime/1000.0,
-				ping,
-				nudge);
-*/
-#endif
-
 
 		if (zn_drawball.integer &&
 			!(cent->currentState.powerups & (1 << PW_INVIS))) {
@@ -2639,32 +2659,20 @@ void CG_Player( centity_t *cent ) {
 		lerpOrigin[1] = cent->lerpOrigin[1];
 		lerpOrigin[2] = cent->lerpOrigin[2];
 
-		predictedOrigin[0] = lerpOrigin[0] + nudge*cent->currentState.pos.trDelta[0];
-		predictedOrigin[1] = lerpOrigin[1] + nudge*cent->currentState.pos.trDelta[1];
-		predictedOrigin[2] = lerpOrigin[2] + nudge*cent->currentState.pos.trDelta[2];
-
-		if (cent->currentState.groundEntityNum == -1) {
-			// In midair
-			predictedOrigin[2] -= nudge*nudge*zn_gravity.value/2.0;
-		}
-
-		trap_CM_BoxTrace( &trace, cent->currentState.pos.trBase, predictedOrigin, mins, maxs, 0, MASK_PLAYERSOLID );
-
-		predictedOrigin[0] = trace.endpos[0];
-		predictedOrigin[1] = trace.endpos[1];
-		predictedOrigin[2] = trace.endpos[2];
+		ZN_PredictOrigin( cent, nudge, predictedOrigin );
 
 		cent->lerpOrigin[0] = predictedOrigin[0];
 		cent->lerpOrigin[1] = predictedOrigin[1];
 		cent->lerpOrigin[2] = predictedOrigin[2];
 
-		CG_Player_fx( cent, 0 );
+		CG_Player_( cent );
 
 		cent->lerpOrigin[0] = lerpOrigin[0];
 		cent->lerpOrigin[1] = lerpOrigin[1];
 		cent->lerpOrigin[2] = lerpOrigin[2];
 	}
 }
+// ZNUDGE END
 
 
 //=====================================================================

@@ -49,6 +49,3 @@ I am the quake player, ///y///. You can contact me by email: ry4096@gmail.com
 GPL. This mod was created by modifying the code provided here:
 https://github.com/id-Software/Quake-III-Arena
 
-The source code for the mod is packed inside the pk3,
-under the folder znudge_src.
-
