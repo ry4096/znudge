@@ -324,7 +324,7 @@ static cvarTable_t cvarTable[] = { // bk001129
 //	{ &cg_pmove_fixed, "cg_pmove_fixed", "0", CVAR_USERINFO | CVAR_ARCHIVE },
 
 // ZNUDGE BEGIN
-	{ &znudge, "znudge", "0", CVAR_ARCHIVE},
+	{ &znudge, "znudge", "1", CVAR_ARCHIVE},
 	{ &zn_gravity, "zn_gravity", "800", CVAR_ARCHIVE},
 	{ &zn_drawball, "zn_drawball", "1", CVAR_ARCHIVE}
 // ZNUDGE END
