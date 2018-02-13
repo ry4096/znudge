@@ -39,7 +39,7 @@ diff -r code/cgame/cg_players.c ../../../Quake-III-Arena-master/code/cgame/cg_pl
 < void CG_Player_( centity_t *cent ) {
 ---
 > void CG_Player( centity_t *cent ) {
-2582,2675d2578
+2582,2680d2578
 < 
 < 
 < 
@@ -52,7 +52,12 @@ diff -r code/cgame/cg_players.c ../../../Quake-III-Arena-master/code/cgame/cg_pl
 < ===============
 < */
 < void ZN_PredictOrigin( centity_t* cent, float nudge, vec3_t predictedOrigin ) {
-< 	vec3_t mins = {-15, -15, -24}, maxs = {15, 15, 32};
+< 	//vec3_t mins = {-15, -15, -24}, maxs = {15, 15, 32};
+< 
+< 	// clip bottom player bounding box a little to prevent clipping the
+< 	// ground when running.
+< 	vec3_t mins = {-15, -15, -22}, maxs = {15, 15, 32};
+< 
 < 	trace_t	trace;
 < 
 < 	predictedOrigin[0] = cent->lerpOrigin[0] + nudge*cent->currentState.pos.trDelta[0];

@@ -2591,7 +2591,12 @@ have elapsed. This function will be improved over time...
 ===============
 */
 void ZN_PredictOrigin( centity_t* cent, float nudge, vec3_t predictedOrigin ) {
-	vec3_t mins = {-15, -15, -24}, maxs = {15, 15, 32};
+	//vec3_t mins = {-15, -15, -24}, maxs = {15, 15, 32};
+
+	// clip bottom player bounding box a little to prevent clipping the
+	// ground when running.
+	vec3_t mins = {-15, -15, -22}, maxs = {15, 15, 32};
+
 	trace_t	trace;
 
 	predictedOrigin[0] = cent->lerpOrigin[0] + nudge*cent->currentState.pos.trDelta[0];
