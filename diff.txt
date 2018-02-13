@@ -1,0 +1,136 @@
+diff -r code/cgame/cg_local.h ../../../Quake-III-Arena-master/code/cgame/cg_local.h
+1187,1192d1186
+< // ZNUDGE BEGIN
+< extern	vmCvar_t		znudge;
+< extern	vmCvar_t		zn_gravity;
+< extern	vmCvar_t		zn_drawball;
+< // ZNUDGE END
+< 
+diff -r code/cgame/cg_main.c ../../../Quake-III-Arena-master/code/cgame/cg_main.c
+200,205d199
+< // ZNUDGE BEGIN
+< vmCvar_t	znudge;
+< vmCvar_t	zn_gravity;
+< vmCvar_t	zn_drawball;
+< // ZNUDGE END
+< 
+323,330c317,318
+< 	{ &cg_trueLightning, "cg_trueLightning", "0.0", CVAR_ARCHIVE},
+< //	{ &cg_pmove_fixed, "cg_pmove_fixed", "0", CVAR_USERINFO | CVAR_ARCHIVE },
+< 
+< // ZNUDGE BEGIN
+< 	{ &znudge, "znudge", "0", CVAR_ARCHIVE},
+< 	{ &zn_gravity, "zn_gravity", "800", CVAR_ARCHIVE},
+< 	{ &zn_drawball, "zn_drawball", "1", CVAR_ARCHIVE}
+< // ZNUDGE END
+---
+> 	{ &cg_trueLightning, "cg_trueLightning", "0.0", CVAR_ARCHIVE}
+> //	{ &cg_pmove_fixed, "cg_pmove_fixed", "0", CVAR_USERINFO | CVAR_ARCHIVE }
+diff -r code/cgame/cg_players.c ../../../Quake-III-Arena-master/code/cgame/cg_players.c
+2224d2223
+< // ZNUDGE BEGIN
+2227,2229c2226
+< CG_Player_
+< 
+< This is the normal CG_Player function.
+---
+> CG_Player
+2232c2229
+< void CG_Player_( centity_t *cent ) {
+---
+> void CG_Player( centity_t *cent ) {
+2582,2675d2578
+< 
+< 
+< 
+< /*
+< ===============
+< ZN_PredictOrigin
+< 
+< Predict's the origin of the player cent after nudge seconds
+< have elapsed. This function will be improved over time...
+< ===============
+< */
+< void ZN_PredictOrigin( centity_t* cent, float nudge, vec3_t predictedOrigin ) {
+< 	vec3_t mins = {-15, -15, -24}, maxs = {15, 15, 32};
+< 	trace_t	trace;
+< 
+< 	predictedOrigin[0] = cent->lerpOrigin[0] + nudge*cent->currentState.pos.trDelta[0];
+< 	predictedOrigin[1] = cent->lerpOrigin[1] + nudge*cent->currentState.pos.trDelta[1];
+< 	predictedOrigin[2] = cent->lerpOrigin[2] + nudge*cent->currentState.pos.trDelta[2];
+< 
+< 	if (cent->currentState.groundEntityNum == -1) {
+< 		// In midair
+< 		predictedOrigin[2] -= nudge*nudge*zn_gravity.value/2.0;
+< 	}
+< 
+< 	trap_CM_BoxTrace( &trace, cent->lerpOrigin, predictedOrigin, mins, maxs, 0, MASK_PLAYERSOLID );
+< 
+< 	predictedOrigin[0] = trace.endpos[0];
+< 	predictedOrigin[1] = trace.endpos[1];
+< 	predictedOrigin[2] = trace.endpos[2];
+< }
+< 
+< 
+< 
+< 
+< /*
+< ===============
+< CG_Player
+< 
+< This is the new CG_Player function.
+< ===============
+< */
+< void CG_Player( centity_t *cent ) {
+< 
+< 	if (znudge.integer == 0 ||
+< 		cg.clientNum == cent->currentState.number ||
+< 		cent->currentState.eFlags & EF_DEAD ) {
+< 
+< 		CG_Player_( cent );
+< 	}
+< 	else {
+< 		vec3_t lerpOrigin;
+< 		vec3_t predictedOrigin;
+< 		int ping;
+< 		float nudge;
+< 
+< 		ping = cg.snap ? cg.snap->ping : 0;
+< 		nudge = (ping + cg.frametime)/1000.0;
+< 
+< 		if (zn_drawball.integer &&
+< 			!(cent->currentState.powerups & (1 << PW_INVIS))) {
+< 			refEntity_t ent;
+< 			float orb_offset = 16.0;
+< 
+< 			memset (&ent, 0, sizeof(ent));
+< 			VectorCopy( cent->lerpOrigin, ent.origin);
+< 			VectorCopy( cent->lerpOrigin, ent.oldorigin);
+< 			ent.origin[2] += orb_offset;
+< 			ent.oldorigin[2] += orb_offset;
+< 
+< 			ent.reType = RT_SPRITE;
+< 			ent.radius = 16;
+< 			ent.rotation = 0;
+< 			ent.customShader = cgs.media.plasmaBallShader;
+< 			trap_R_AddRefEntityToScene( &ent );
+< 		}
+< 
+< 		lerpOrigin[0] = cent->lerpOrigin[0];
+< 		lerpOrigin[1] = cent->lerpOrigin[1];
+< 		lerpOrigin[2] = cent->lerpOrigin[2];
+< 
+< 		ZN_PredictOrigin( cent, nudge, predictedOrigin );
+< 
+< 		cent->lerpOrigin[0] = predictedOrigin[0];
+< 		cent->lerpOrigin[1] = predictedOrigin[1];
+< 		cent->lerpOrigin[2] = predictedOrigin[2];
+< 
+< 		CG_Player_( cent );
+< 
+< 		cent->lerpOrigin[0] = lerpOrigin[0];
+< 		cent->lerpOrigin[1] = lerpOrigin[1];
+< 		cent->lerpOrigin[2] = lerpOrigin[2];
+< 	}
+< }
+< // ZNUDGE END

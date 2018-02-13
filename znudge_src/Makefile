@@ -31,6 +31,8 @@ CG_OBJS = \
 	../build/cgame/q_math.asm \
 	../build/cgame/q_shared.asm \
 
+	#../build/cgame/cg_particles.asm \
+
 
 CG_SYSCALLS = code/cgame/cg_syscalls.asm
 
@@ -38,10 +40,18 @@ CG_QVM = ../vm/cgame.qvm
 
 PAK = ../znudge_v1/zzznudge_v1.pk3
 
+# Automatically create diff from basecode.
+DIFF_FILE = ../diff.txt
+CGAME_SRC = code/cgame
+ORIG_CGAME = ../../../Quake-III-Arena-master/code/cgame
+
 all : ${PAK}
 
+diff : 
+	- diff -r ${CGAME_SRC} ${ORIG_CGAME} > ${DIFF_FILE}
+
 ${PAK} : ${CG_QVM}
-	cd .. && zip -r znudge_src/${PAK} vm znudge_src
+	cd .. && zip -r znudge_src/${PAK} vm
 
 ${CG_QVM} : ${CG_OBJS} ${CG_SYSCALLS}
 	${Q3ASM} -o $@ ${CG_OBJS} ${CG_SYSCALLS}
