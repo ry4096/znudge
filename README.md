@@ -11,7 +11,7 @@ by the authors of instaunlagged.
 
 ## INSTALLATION:
 
-To install, just copy the zzznudge_v1.pk3 file into your baseq3 folder.
+To install, just copy the [zzznudge_v1.pk3](https://github.com/ry4096/znudge/raw/master/znudge_v1/zzznudge_v1.pk3) file into your baseq3 folder.
 
 
 ## CVARS:
