@@ -1,6 +1,7 @@
 ## ABOUT:
 
-ZNudge is a client side mod that tries to reduce the effect of lag.
+ZNudge is a client side mod for Quake 3 Arena (TM)
+that tries to reduce the effect of lag.
 It's essentially just an improved version of cl_timenudge.
 It will automatically detect your ping and draw the other players forward
 into the future by your ping. You can aim directly at targets
