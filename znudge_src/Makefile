@@ -3,14 +3,10 @@ Q3CPP = q3cpp
 Q3LCC = q3lcc
 Q3RCC = q3rcc
 
-CFLAGS = 
+CFLAGS = -DQ3_VM -DCGAME -S -Wf-target=bytecode -Wf-g -Icode/cgame -Icode/game -Icode/q3_ui
 
 CG_OBJS = \
 	../build/cgame/cg_main.asm \
-	../build/cgame/bg_misc.asm \
-	../build/cgame/bg_pmove.asm \
-	../build/cgame/bg_slidemove.asm \
-	../build/cgame/bg_lib.asm \
 	../build/cgame/cg_consolecmds.asm \
 	../build/cgame/cg_draw.asm \
 	../build/cgame/cg_drawtools.asm \
@@ -28,10 +24,12 @@ CG_OBJS = \
 	../build/cgame/cg_snapshot.asm \
 	../build/cgame/cg_view.asm \
 	../build/cgame/cg_weapons.asm \
+	../build/cgame/bg_slidemove.asm \
+	../build/cgame/bg_pmove.asm \
+	../build/cgame/bg_lib.asm \
+	../build/cgame/bg_misc.asm \
 	../build/cgame/q_math.asm \
 	../build/cgame/q_shared.asm \
-
-	#../build/cgame/cg_particles.asm \
 
 
 CG_SYSCALLS = code/cgame/cg_syscalls.asm
@@ -54,32 +52,32 @@ ${PAK} : ${CG_QVM}
 	cd .. && zip -r znudge_src/${PAK} vm
 
 ${CG_QVM} : ${CG_OBJS} ${CG_SYSCALLS}
-	${Q3ASM} -o $@ ${CG_OBJS} ${CG_SYSCALLS}
+	${Q3ASM} -o $@ ${CG_SYSCALLS} ${CG_OBJS}
 	
 ../build/cgame/%.asm : code/cgame/%.c
-	${Q3LCC} ${CFLAGS} -DCGAME -o $@ $<
+	${Q3LCC} ${CFLAGS} -o $@ $<
 
 ../build/cgame/bg_misc.asm : code/game/bg_misc.c
-	${Q3LCC} ${CFLAGS} -DCGAME -o $@ $<
+	${Q3LCC} ${CFLAGS} -o $@ $<
 
 ../build/cgame/bg_move.asm : code/game/bg_move.c
-	${Q3LCC} ${CFLAGS} -DCGAME -o $@ $<
+	${Q3LCC} ${CFLAGS} -o $@ $<
 
 ../build/cgame/bg_pmove.asm : code/game/bg_pmove.c
-	${Q3LCC} ${CFLAGS} -DCGAME -o $@ $<
+	${Q3LCC} ${CFLAGS} -o $@ $<
 
 ../build/cgame/bg_slidemove.asm : code/game/bg_slidemove.c
-	${Q3LCC} ${CFLAGS} -DCGAME -o $@ $<
+	${Q3LCC} ${CFLAGS} -o $@ $<
 
 ../build/cgame/bg_lib.asm : code/game/bg_lib.c
-	${Q3LCC} ${CFLAGS} -DCGAME -o $@ $<
+	${Q3LCC} ${CFLAGS} -o $@ $<
 
 ../build/cgame/q_math.asm : code/game/q_math.c
-	${Q3LCC} ${CFLAGS} -DCGAME -o $@ $<
+	${Q3LCC} ${CFLAGS} -o $@ $<
 
 ../build/cgame/q_shared.asm : code/game/q_shared.c
-	${Q3LCC} ${CFLAGS} -DCGAME -o $@ $<
+	${Q3LCC} ${CFLAGS} -o $@ $<
 
 ../build/qcommon/%.asm : code/qcommon/%.c
-	${Q3LCC} ${CFLAGS} -DCGAME -o $@ $<
+	${Q3LCC} ${CFLAGS} -o $@ $<
 
