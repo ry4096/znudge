@@ -47,6 +47,14 @@ I am the quake player, ///y///. You can contact me by email: ry4096@gmail.com
 
 ## LICENSE:
 
-GPL. This mod was created by modifying the code provided here:
-https://github.com/id-Software/Quake-III-Arena
+GPL. This mod was created by modifying the code provided in
+[ID's source release](https://github.com/id-Software/Quake-III-Arena)
+
+## COMPILING:
+
+I had difficulty using the q3lcc and q3asm provided in ID's source release
+so I used the ones from [ioquake3](https://github.com/ioquake/ioq3) instead.
+Once you have q3lcc and q3asm, make sure they are in the path and then run make.
+
+
 
