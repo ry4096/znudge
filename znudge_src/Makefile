@@ -5,6 +5,9 @@ Q3RCC = q3rcc
 
 CFLAGS = -DQ3_VM -DCGAME -S -Wf-target=bytecode -Wf-g -Icode/cgame -Icode/game -Icode/q3_ui
 
+# Flag needed for q3asm from ioquake.
+ASMFLAGS = -vq3
+
 CG_OBJS = \
 	../build/cgame/cg_main.asm \
 	../build/cgame/cg_consolecmds.asm \
@@ -52,7 +55,7 @@ ${PAK} : ${CG_QVM}
 	cd .. && zip -r znudge_src/${PAK} vm
 
 ${CG_QVM} : ${CG_OBJS} ${CG_SYSCALLS}
-	${Q3ASM} -o $@ ${CG_SYSCALLS} ${CG_OBJS}
+	${Q3ASM} ${ASMFLAGS} -o $@ ${CG_SYSCALLS} ${CG_OBJS}
 	
 ../build/cgame/%.asm : code/cgame/%.c
 	${Q3LCC} ${CFLAGS} -o $@ $<
