@@ -2700,6 +2700,7 @@ void ZN_PredictOrigin( centity_t* cent, float nudge, vec3_t predictedOrigin ) {
 	//vec3_t mins = {-15, -15, -24}, maxs = {15, 15, 32};
 	vec3_t mins = {-13, -13, -22}, maxs = {13, 13, 30};
 	vec3_t ground_trace_mins = {-12, -12, 0}, ground_trace_maxs = {-12, -12, 10};
+	int in_water = 0;
 	int on_ground = (cent->currentState.groundEntityNum != ENTITYNUM_NONE);
 	int was_on_ground = on_ground;
 	trace_t	trace;
@@ -2711,6 +2712,7 @@ void ZN_PredictOrigin( centity_t* cent, float nudge, vec3_t predictedOrigin ) {
 	vec3_t ground_trace_end;
 	float gravity;
 	int content_mask;
+	int contents;
 
 	origin[0] = cent->lerpOrigin[0];
 	origin[1] = cent->lerpOrigin[1];
@@ -2731,6 +2733,13 @@ void ZN_PredictOrigin( centity_t* cent, float nudge, vec3_t predictedOrigin ) {
 					clips, on_ground, cent->currentState.groundEntityNum, nudge_remaining);
 */
 
+		// Using this point as a temp vector
+		ground_trace_start[0] = origin[0];
+		ground_trace_start[1] = origin[1];
+		ground_trace_start[2] = origin[2] - 24;
+		contents = trap_CM_PointContents( ground_trace_start, 0 );
+		in_water = contents & ( CONTENTS_WATER | CONTENTS_SLIME | CONTENTS_LAVA );
+
 		if (on_ground) {
 			// reduce player bounding box from below to avoid clipping
 			// the ground and stairs.
@@ -2739,7 +2748,13 @@ void ZN_PredictOrigin( centity_t* cent, float nudge, vec3_t predictedOrigin ) {
 		}
 		else {
 			mins[2] = -24;
-			gravity = zn_gravity.value;
+
+			if (cent->currentState.powerups & (1 << PW_FLIGHT) || in_water) {
+				gravity = 0.0;
+			}
+			else {
+				gravity = zn_gravity.value;
+			}
 		}
 
 		ZN_PredictSimple( origin, velocity, gravity, nudge_remaining, predictedOrigin );
@@ -2808,6 +2823,7 @@ void ZN_PredictOrigin( centity_t* cent, float nudge, vec3_t predictedOrigin ) {
 
 		if (on_ground) {
 			float speed;
+			float max_speed;
 			float new_z = trace.endpos[2] + 24;
 
 			if (new_z > origin[2]) {
@@ -2817,8 +2833,13 @@ void ZN_PredictOrigin( centity_t* cent, float nudge, vec3_t predictedOrigin ) {
 
 			// Cap running speed.
 			speed = sqrt(velocity[0]*velocity[0] + velocity[1]*velocity[1]);
-			if (speed > zn_runningspeed.value) {
-				float ratio = zn_runningspeed.value/speed;
+
+			max_speed = zn_runningspeed.value;
+			if (cent->currentState.powerups & (1 << PW_HASTE))
+				max_speed *= 1.3;
+
+			if (speed > max_speed) {
+				float ratio = max_speed/speed;
 				velocity[0] *= ratio;
 				velocity[1] *= ratio;
 			}
