@@ -201,6 +201,9 @@ vmCvar_t	cg_obeliskRespawnDelay;
 vmCvar_t	znudge;
 vmCvar_t	zn_gravity;
 vmCvar_t	zn_drawball;
+vmCvar_t	zn_maxclips;
+vmCvar_t	zn_climbheight;
+vmCvar_t	zn_runningspeed;
 // ZNUDGE END
 
 typedef struct {
@@ -326,7 +329,10 @@ static cvarTable_t cvarTable[] = { // bk001129
 // ZNUDGE BEGIN
 	{ &znudge, "znudge", "1", CVAR_ARCHIVE},
 	{ &zn_gravity, "zn_gravity", "800", CVAR_ARCHIVE},
-	{ &zn_drawball, "zn_drawball", "1", CVAR_ARCHIVE}
+	{ &zn_drawball, "zn_drawball", "1", CVAR_ARCHIVE},
+	{ &zn_maxclips, "zn_maxclips", "5", CVAR_ARCHIVE},
+	{ &zn_climbheight, "zn_climbheight", "20", CVAR_ARCHIVE},
+	{ &zn_runningspeed, "zn_runningspeed", "320", CVAR_ARCHIVE}
 // ZNUDGE END
 };
 

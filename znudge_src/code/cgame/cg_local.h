@@ -1188,6 +1188,9 @@ extern	vmCvar_t		cg_obeliskRespawnDelay;
 extern	vmCvar_t		znudge;
 extern	vmCvar_t		zn_gravity;
 extern	vmCvar_t		zn_drawball;
+extern	vmCvar_t		zn_maxclips;
+extern	vmCvar_t		zn_climbheight;
+extern	vmCvar_t		zn_runningspeed;
 // ZNUDGE END
 
 //

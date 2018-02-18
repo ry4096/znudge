@@ -23,14 +23,32 @@ This mod has the following cvars:
 	If znudge is 0, the normal player rendering code is run.
 	If znudge is 1, then the other player positions are nudged into the future.
 
-\zn_gravity : integer : default 800
-	Set this to whatever the gravity is on the map.
-	In future versions this variable may not be needed.
-
 \zn_drawball : 0 or 1 : default 1
 	If not 0, draw a plasma ball at each player's real position.
 	If they are changing directions frequently, you may want
 	to aim closer to this ball than their projected future position.
+
+
+Other more esoteric cvars:
+
+\zn_gravity : integer : default 800
+	Set this to whatever the gravity is on the map.
+	In future versions this variable may not be needed.
+
+
+\zn_maxclips : integer : default 5
+	This is the number of clipping events that can happen during
+	a trajectory prediction. Players often clip against walls and
+	floors and their path will continue to be predicted
+	up until this many clippings have occurred.
+
+\zn_climbheight : integer : default 20
+	Assume that players will be able to walk over or jump over
+	obstacles that are this high. Stair height is 18.
+
+\zn_runningspeed : integer : default 320
+	Assume that players will not run faster than this speed
+	when on the ground.
 
 
 ## FUTURE PLANS:
