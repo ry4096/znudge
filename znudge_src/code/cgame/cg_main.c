@@ -204,6 +204,7 @@ vmCvar_t	zn_drawball;
 vmCvar_t	zn_maxclips;
 vmCvar_t	zn_climbheight;
 vmCvar_t	zn_runningspeed;
+vmCvar_t	zn_smoothweight;
 // ZNUDGE END
 
 typedef struct {
@@ -332,7 +333,8 @@ static cvarTable_t cvarTable[] = { // bk001129
 	{ &zn_drawball, "zn_drawball", "1", CVAR_ARCHIVE},
 	{ &zn_maxclips, "zn_maxclips", "5", CVAR_ARCHIVE},
 	{ &zn_climbheight, "zn_climbheight", "20", CVAR_ARCHIVE},
-	{ &zn_runningspeed, "zn_runningspeed", "320", CVAR_ARCHIVE}
+	{ &zn_runningspeed, "zn_runningspeed", "320", CVAR_ARCHIVE},
+	{ &zn_smoothweight, "zn_smoothweight", ".2", CVAR_ARCHIVE}
 // ZNUDGE END
 };
 
@@ -1976,6 +1978,17 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	CG_ShaderStateChanged();
 
 	trap_S_ClearLoopingSounds( qtrue );
+
+// ZNUDGE BEGIN
+	{
+		int i;
+		for ( i = 0; i < MAX_CLIENTS; i++ ) {
+			cg.smoothVelocities[i][0] = 0.0;
+			cg.smoothVelocities[i][1] = 0.0;
+			cg.smoothVelocities[i][2] = 0.0;
+		}
+	}
+// ZNUDGE END
 }
 
 /*

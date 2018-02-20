@@ -2688,6 +2688,103 @@ void ZN_PredictSimple( vec3_t origin, vec3_t velocity, float gravity, float nudg
 	}
 }
 
+
+/*
+===============
+ZN_CheckGround
+
+Checks if the player is on the ground, and if they need
+to be boosted upwards after walking over stairs.
+===============
+*/
+int ZN_CheckGround( centity_t* cent, vec3_t origin, vec3_t velocity, vec3_t predictedOrigin ) {
+	vec3_t ground_trace_mins = {-12, -12, 0}, ground_trace_maxs = {-12, -12, 10};
+	vec3_t ground_trace_start;
+	vec3_t ground_trace_end;
+	trace_t	trace;
+	int on_ground;
+
+	// Figure out if we are on the ground now.
+	ground_trace_start[0] = origin[0];
+	ground_trace_start[1] = origin[1];
+	ground_trace_start[2] = origin[2] + 32 - ground_trace_maxs[2];
+
+	ground_trace_end[0] = origin[0];
+	ground_trace_end[1] = origin[1];
+	ground_trace_end[2] = origin[2] - 26;
+
+	//trap_CM_BoxTrace( &trace, ground_trace_start, ground_trace_end, ground_trace_mins, ground_trace_maxs, 0, MASK_PLAYERSOLID );
+	CG_Trace( &trace, ground_trace_start, NULL, NULL, ground_trace_end, cent->currentState.number, MASK_PLAYERSOLID );
+
+	// MIN_WALK_NORMAL = .7
+	on_ground = (trace.fraction < 1.0)
+			//&& (origin[2] - trace.endpos[2] <= 24)
+			//&& trace.plane.normal[2] < 0.7
+			;
+
+	if (on_ground) {
+		float speed;
+		float max_speed;
+		float new_z = trace.endpos[2] + 24;
+
+		if (new_z > origin[2]) {
+			//CG_Printf("ZN_Step: shift up: %f\n", new_z - origin[2]);
+			origin[2] = predictedOrigin[2] = new_z;
+		}
+
+		// Cap running speed.
+		speed = sqrt(velocity[0]*velocity[0] + velocity[1]*velocity[1]);
+
+		max_speed = zn_runningspeed.value;
+		if (cent->currentState.powerups & (1 << PW_HASTE))
+			max_speed *= 1.3;
+
+		if (speed > max_speed) {
+			float ratio = max_speed/speed;
+			velocity[0] *= ratio;
+			velocity[1] *= ratio;
+		}
+	}
+
+	return on_ground;
+}
+
+void ZN_GetVelocity ( centity_t* cent, vec3_t velocity ) {
+
+	int index = cent->currentState.number;
+
+	if ( zn_smoothweight.value > 1.0 )
+		zn_smoothweight.value = 1.0;
+
+	if ( zn_smoothweight.value < 0.0 )
+		zn_smoothweight.value = 0.0;
+
+	if ( zn_smoothweight.value == 1.0 ) {
+		velocity[0] = cent->currentState.pos.trDelta[0];
+		velocity[1] = cent->currentState.pos.trDelta[1];
+		velocity[2] = cent->currentState.pos.trDelta[2];
+	}
+	else {
+
+/*
+		// Should be made FPS independent
+		float cpuFrameTime = (float)cg.cpuFrameTime;
+		float FPS = 1000.0/cpuFrameTime;
+
+		// weight is the FPS-nth root of zn_smoothweight.value
+		//float weight = exp(log(zn_smoothweight.value)/FPS);
+*/
+		float weight = zn_smoothweight.value;
+
+		velocity[0] = cg.smoothVelocities[index][0] =
+			(1 - weight)*cg.smoothVelocities[index][0] + weight*cent->currentState.pos.trDelta[0];
+		velocity[1] = cg.smoothVelocities[index][1] =
+			(1 - weight)*cg.smoothVelocities[index][1] + weight*cent->currentState.pos.trDelta[1];
+		velocity[2] = cg.smoothVelocities[index][2] =
+			(1 - weight)*cg.smoothVelocities[index][2] + weight*cent->currentState.pos.trDelta[2];
+	}
+}
+
 /*
 ===============
 ZN_PredictOrigin
@@ -2699,7 +2796,6 @@ have elapsed. This function will be improved over time...
 void ZN_PredictOrigin( centity_t* cent, float nudge, vec3_t predictedOrigin ) {
 	//vec3_t mins = {-15, -15, -24}, maxs = {15, 15, 32};
 	vec3_t mins = {-13, -13, -22}, maxs = {13, 13, 30};
-	vec3_t ground_trace_mins = {-12, -12, 0}, ground_trace_maxs = {-12, -12, 10};
 	int in_water = 0;
 	int on_ground = (cent->currentState.groundEntityNum != ENTITYNUM_NONE);
 	int was_on_ground = on_ground;
@@ -2708,8 +2804,7 @@ void ZN_PredictOrigin( centity_t* cent, float nudge, vec3_t predictedOrigin ) {
 	int clips = 0;
 	vec3_t origin;
 	vec3_t velocity;
-	vec3_t ground_trace_start;
-	vec3_t ground_trace_end;
+	vec3_t temp;
 	float gravity;
 	int content_mask;
 	int contents;
@@ -2718,9 +2813,7 @@ void ZN_PredictOrigin( centity_t* cent, float nudge, vec3_t predictedOrigin ) {
 	origin[1] = cent->lerpOrigin[1];
 	origin[2] = cent->lerpOrigin[2];
 
-	velocity[0] = cent->currentState.pos.trDelta[0];
-	velocity[1] = cent->currentState.pos.trDelta[1];
-	velocity[2] = cent->currentState.pos.trDelta[2];
+	ZN_GetVelocity ( cent, velocity );
 
 	predictedOrigin[0] = origin[0];
 	predictedOrigin[1] = origin[1];
@@ -2733,11 +2826,10 @@ void ZN_PredictOrigin( centity_t* cent, float nudge, vec3_t predictedOrigin ) {
 					clips, on_ground, cent->currentState.groundEntityNum, nudge_remaining);
 */
 
-		// Using this point as a temp vector
-		ground_trace_start[0] = origin[0];
-		ground_trace_start[1] = origin[1];
-		ground_trace_start[2] = origin[2] - 24;
-		contents = trap_CM_PointContents( ground_trace_start, 0 );
+		temp[0] = origin[0];
+		temp[1] = origin[1];
+		temp[2] = origin[2] - 24;
+		contents = trap_CM_PointContents( temp, 0 );
 		in_water = contents & ( CONTENTS_WATER | CONTENTS_SLIME | CONTENTS_LAVA );
 
 		if (on_ground) {
@@ -2802,48 +2894,7 @@ void ZN_PredictOrigin( centity_t* cent, float nudge, vec3_t predictedOrigin ) {
 			velocity[2] -= velocity[2]*trace.plane.normal[2];
 		}
 
-
-		// Figure out if we are on the ground now.
-		ground_trace_start[0] = origin[0];
-		ground_trace_start[1] = origin[1];
-		ground_trace_start[2] = origin[2] + maxs[2] - ground_trace_maxs[2];
-
-		ground_trace_end[0] = origin[0];
-		ground_trace_end[1] = origin[1];
-		ground_trace_end[2] = origin[2] - 26;
-
-		//trap_CM_BoxTrace( &trace, ground_trace_start, ground_trace_end, ground_trace_mins, ground_trace_maxs, 0, MASK_PLAYERSOLID );
-		CG_Trace( &trace, ground_trace_start, NULL, NULL, ground_trace_end, cent->currentState.number, MASK_PLAYERSOLID );
-
-		// MIN_WALK_NORMAL = .7
-		on_ground = (trace.fraction < 1.0)
-				//&& (origin[2] - trace.endpos[2] <= 24)
-				//&& trace.plane.normal[2] < 0.7
-				;
-
-		if (on_ground) {
-			float speed;
-			float max_speed;
-			float new_z = trace.endpos[2] + 24;
-
-			if (new_z > origin[2]) {
-				//CG_Printf("ZN_Step: shift up: %f\n", new_z - origin[2]);
-				origin[2] = predictedOrigin[2] = new_z;
-			}
-
-			// Cap running speed.
-			speed = sqrt(velocity[0]*velocity[0] + velocity[1]*velocity[1]);
-
-			max_speed = zn_runningspeed.value;
-			if (cent->currentState.powerups & (1 << PW_HASTE))
-				max_speed *= 1.3;
-
-			if (speed > max_speed) {
-				float ratio = max_speed/speed;
-				velocity[0] *= ratio;
-				velocity[1] *= ratio;
-			}
-		}
+		on_ground = ZN_CheckGround( cent, origin, velocity, predictedOrigin );
 
 /*
 		if (on_ground && !was_on_ground)

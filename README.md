@@ -28,8 +28,17 @@ This mod has the following cvars:
 	If they are changing directions frequently, you may want
 	to aim closer to this ball than their projected future position.
 
+\zn_smoothweight : float, 0 through 1 : default .3
+	Averages out other player velocities each frame,
+	with zn_smoothweight given to the player's actual velocity.
+	When set to 1.0 prediction will be accurate if they keep walking
+	in a straight line but jumpy when they change directions.
+	When set to lower values like 0.1 the jumps from direction changes
+	will be more smooth. If set too low, the velocity used for prediction
+	will lag behind the real velocity and be less accurate.
 
-Other more esoteric cvars:
+
+Other cvars you probably don't need to change:
 
 \zn_gravity : integer : default 800
 	Set this to whatever the gravity is on the map.

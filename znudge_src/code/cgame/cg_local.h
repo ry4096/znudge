@@ -645,6 +645,18 @@ typedef struct {
 	char			testModelName[MAX_QPATH];
 	qboolean		testGun;
 
+	// ZNUDGE BEGIN
+
+	// Provide FPS data:
+	int cpuTimePrev;
+	int cpuTimeCurr;
+	int cpuFrameTime;
+
+	// Smoothed out velocities so players don't teleport around so much.
+	vec3_t smoothVelocities[MAX_CLIENTS];
+
+	// ZNUDGE END
+
 } cg_t;
 
 
@@ -1070,6 +1082,7 @@ typedef struct {
 
 } cgs_t;
 
+
 //==============================================================================
 
 extern	cgs_t			cgs;
@@ -1078,6 +1091,8 @@ extern	centity_t		cg_entities[MAX_GENTITIES];
 extern	weaponInfo_t	cg_weapons[MAX_WEAPONS];
 extern	itemInfo_t		cg_items[MAX_ITEMS];
 extern	markPoly_t		cg_markPolys[MAX_MARK_POLYS];
+
+
 
 extern	vmCvar_t		cg_centertime;
 extern	vmCvar_t		cg_runpitch;
@@ -1191,6 +1206,7 @@ extern	vmCvar_t		zn_drawball;
 extern	vmCvar_t		zn_maxclips;
 extern	vmCvar_t		zn_climbheight;
 extern	vmCvar_t		zn_runningspeed;
+extern	vmCvar_t		zn_smoothweight;
 // ZNUDGE END
 
 //
