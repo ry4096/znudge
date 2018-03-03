@@ -1487,6 +1487,19 @@ void CG_TransitionPlayerState( playerState_t *ps, playerState_t *ops );
 void CG_CheckChangedPredictableEvents( playerState_t *ps );
 
 
+
+// ZNUDGE BEGIN
+//
+// cg_znudge.c
+//
+float ZN_TimeToPoint( vec3_t origin, vec3_t velocity, float gravity, vec3_t destination );
+void  ZN_PredictSimple( vec3_t origin, vec3_t velocity, float gravity, float nudge, vec3_t predicted);
+int   ZN_CheckGround( centity_t* cent, vec3_t origin, vec3_t velocity, vec3_t predictedOrigin );
+void  ZN_GetVelocity ( centity_t* cent, vec3_t velocity );
+void  ZN_PredictOrigin( centity_t* cent, float nudge, vec3_t predictedOrigin );
+// ZNUDGE END
+
+
 //===============================================
 
 //

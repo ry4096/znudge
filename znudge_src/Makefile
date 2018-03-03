@@ -19,6 +19,7 @@ CG_OBJS = \
 	../build/cgame/cg_info.asm \
 	../build/cgame/cg_localents.asm \
 	../build/cgame/cg_marks.asm \
+	../build/cgame/cg_znudge.asm \
 	../build/cgame/cg_players.asm \
 	../build/cgame/cg_playerstate.asm \
 	../build/cgame/cg_predict.asm \
