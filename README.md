@@ -37,6 +37,10 @@ This mod has the following cvars:
 	will be more smooth. If set too low, the velocity used for prediction
 	will lag behind the real velocity and be less accurate.
 
+\zn_lightning : int, 0 or 1 : default 1
+	Make the lightning gun draw perfectly straight ahead regardless of how high
+	your ping is. 
+
 
 Other cvars you probably don't need to change:
 

@@ -1207,6 +1207,7 @@ extern	vmCvar_t		zn_maxclips;
 extern	vmCvar_t		zn_climbheight;
 extern	vmCvar_t		zn_runningspeed;
 extern	vmCvar_t		zn_smoothweight;
+extern	vmCvar_t		zn_lightning;
 // ZNUDGE END
 
 //

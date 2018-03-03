@@ -17,7 +17,7 @@ diff -r code/cgame/cg_local.h ../../../Quake-III-Arena-master/code/cgame/cg_loca
 1095,1096d1081
 < 
 < 
-1202,1211d1186
+1202,1212d1186
 < // ZNUDGE BEGIN
 < extern	vmCvar_t		znudge;
 < extern	vmCvar_t		zn_gravity;
@@ -26,9 +26,10 @@ diff -r code/cgame/cg_local.h ../../../Quake-III-Arena-master/code/cgame/cg_loca
 < extern	vmCvar_t		zn_climbheight;
 < extern	vmCvar_t		zn_runningspeed;
 < extern	vmCvar_t		zn_smoothweight;
+< extern	vmCvar_t		zn_lightning;
 < // ZNUDGE END
 < 
-1488,1500d1462
+1489,1501d1462
 < 
 < 
 < 
@@ -43,7 +44,7 @@ diff -r code/cgame/cg_local.h ../../../Quake-III-Arena-master/code/cgame/cg_loca
 < void  ZN_PredictOrigin( centity_t* cent, float nudge, vec3_t predictedOrigin );
 < // ZNUDGE END
 diff -r code/cgame/cg_main.c ../../../Quake-III-Arena-master/code/cgame/cg_main.c
-200,209d199
+200,210d199
 < // ZNUDGE BEGIN
 < vmCvar_t	znudge;
 < vmCvar_t	zn_gravity;
@@ -52,9 +53,10 @@ diff -r code/cgame/cg_main.c ../../../Quake-III-Arena-master/code/cgame/cg_main.
 < vmCvar_t	zn_climbheight;
 < vmCvar_t	zn_runningspeed;
 < vmCvar_t	zn_smoothweight;
+< vmCvar_t	zn_lightning;
 < // ZNUDGE END
 < 
-327,338c317,318
+328,340c317,318
 < 	{ &cg_trueLightning, "cg_trueLightning", "0.0", CVAR_ARCHIVE},
 < //	{ &cg_pmove_fixed, "cg_pmove_fixed", "0", CVAR_USERINFO | CVAR_ARCHIVE },
 < 
@@ -65,12 +67,13 @@ diff -r code/cgame/cg_main.c ../../../Quake-III-Arena-master/code/cgame/cg_main.
 < 	{ &zn_maxclips, "zn_maxclips", "5", CVAR_ARCHIVE},
 < 	{ &zn_climbheight, "zn_climbheight", "20", CVAR_ARCHIVE},
 < 	{ &zn_runningspeed, "zn_runningspeed", "320", CVAR_ARCHIVE},
-< 	{ &zn_smoothweight, "zn_smoothweight", ".2", CVAR_ARCHIVE}
+< 	{ &zn_smoothweight, "zn_smoothweight", ".2", CVAR_ARCHIVE},
+< 	{ &zn_lightning, "zn_lightning", "1", CVAR_ARCHIVE}
 < // ZNUDGE END
 ---
 > 	{ &cg_trueLightning, "cg_trueLightning", "0.0", CVAR_ARCHIVE}
 > //	{ &cg_pmove_fixed, "cg_pmove_fixed", "0", CVAR_USERINFO | CVAR_ARCHIVE }
-1981,1991d1960
+1983,1993d1960
 < 
 < // ZNUDGE BEGIN
 < 	{
@@ -176,4 +179,51 @@ diff -r code/cgame/cg_view.c ../../../Quake-III-Arena-master/code/cgame/cg_view.
 < 
 < 	// ZNUDGE END
 < 
+diff -r code/cgame/cg_weapons.c ../../../Quake-III-Arena-master/code/cgame/cg_weapons.c
+979d978
+< 	int beam_hit;
+1013,1014c1012
+< 	}
+< 	else {
+---
+> 	} else {
+1032,1064d1029
+< 	beam_hit = trace.fraction < 1.0;
+< 
+< // ZNUDGE BEGIN
+< 	// znudge fixed lightning.
+< 	// Lightning just shoots straight ahead of where you are looking.
+< 	if ((cent->currentState.number == cg.predictedPlayerState.clientNum) && (zn_lightning.value)) {
+< 		vec3_t diff;
+< 		float dist;
+< 
+< 		diff[0] = trace.endpos[0] - muzzlePoint[0];
+< 		diff[1] = trace.endpos[1] - muzzlePoint[1];
+< 		diff[2] = trace.endpos[2] - muzzlePoint[2];
+< 		dist = sqrt(diff[0]*diff[0] + diff[1]*diff[1] + diff[2]*diff[2]);
+< 
+< 		AngleVectors( cg.predictedPlayerState.viewangles, forward, NULL, NULL );
+< 		VectorCopy( cg.predictedPlayerState.origin, muzzlePoint );
+< 
+< 		// FIXME: crouch
+< 		muzzlePoint[2] += DEFAULT_VIEWHEIGHT;
+< 
+< 		VectorMA( muzzlePoint, 14, forward, muzzlePoint );
+< 
+< 		// project forward by the strike distance range
+< 		VectorMA( muzzlePoint, dist, forward, endPoint );
+< 
+< 		// see if it hit a wall
+< 		CG_Trace( &trace, muzzlePoint, vec3_origin, vec3_origin, endPoint, 
+< 			cent->currentState.number, MASK_SHOT );
+< 
+< 		beam_hit = beam_hit || (trace.fraction < 1.0);
+< 	}
+< // ZNUDGE END
+< 
+1077c1042
+< 	if ( beam_hit ) {
+---
+> 	if ( trace.fraction < 1.0 ) {
+Only in code/cgame: .cg_weapons.c.swp
 Only in code/cgame: cg_znudge.c

@@ -976,6 +976,7 @@ static void CG_LightningBolt( centity_t *cent, vec3_t origin ) {
 	refEntity_t  beam;
 	vec3_t   forward;
 	vec3_t   muzzlePoint, endPoint;
+	int beam_hit;
 
 	if (cent->currentState.weapon != WP_LIGHTNING) {
 		return;
@@ -1009,7 +1010,8 @@ static void CG_LightningBolt( centity_t *cent, vec3_t origin ) {
 		AngleVectors(angle, forward, NULL, NULL );
 		VectorCopy(cent->lerpOrigin, muzzlePoint );
 //		VectorCopy(cg.refdef.vieworg, muzzlePoint );
-	} else {
+	}
+	else {
 		// !CPMA
 		AngleVectors( cent->lerpAngles, forward, NULL, NULL );
 		VectorCopy(cent->lerpOrigin, muzzlePoint );
@@ -1027,6 +1029,39 @@ static void CG_LightningBolt( centity_t *cent, vec3_t origin ) {
 	CG_Trace( &trace, muzzlePoint, vec3_origin, vec3_origin, endPoint, 
 		cent->currentState.number, MASK_SHOT );
 
+	beam_hit = trace.fraction < 1.0;
+
+// ZNUDGE BEGIN
+	// znudge fixed lightning.
+	// Lightning just shoots straight ahead of where you are looking.
+	if ((cent->currentState.number == cg.predictedPlayerState.clientNum) && (zn_lightning.value)) {
+		vec3_t diff;
+		float dist;
+
+		diff[0] = trace.endpos[0] - muzzlePoint[0];
+		diff[1] = trace.endpos[1] - muzzlePoint[1];
+		diff[2] = trace.endpos[2] - muzzlePoint[2];
+		dist = sqrt(diff[0]*diff[0] + diff[1]*diff[1] + diff[2]*diff[2]);
+
+		AngleVectors( cg.predictedPlayerState.viewangles, forward, NULL, NULL );
+		VectorCopy( cg.predictedPlayerState.origin, muzzlePoint );
+
+		// FIXME: crouch
+		muzzlePoint[2] += DEFAULT_VIEWHEIGHT;
+
+		VectorMA( muzzlePoint, 14, forward, muzzlePoint );
+
+		// project forward by the strike distance range
+		VectorMA( muzzlePoint, dist, forward, endPoint );
+
+		// see if it hit a wall
+		CG_Trace( &trace, muzzlePoint, vec3_origin, vec3_origin, endPoint, 
+			cent->currentState.number, MASK_SHOT );
+
+		beam_hit = beam_hit || (trace.fraction < 1.0);
+	}
+// ZNUDGE END
+
 	// this is the endpoint
 	VectorCopy( trace.endpos, beam.oldorigin );
 
@@ -1039,7 +1074,7 @@ static void CG_LightningBolt( centity_t *cent, vec3_t origin ) {
 	trap_R_AddRefEntityToScene( &beam );
 
 	// add the impact flare if it hit something
-	if ( trace.fraction < 1.0 ) {
+	if ( beam_hit ) {
 		vec3_t	angles;
 		vec3_t	dir;
 
