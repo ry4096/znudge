@@ -1208,6 +1208,7 @@ extern	vmCvar_t		zn_climbheight;
 extern	vmCvar_t		zn_runningspeed;
 extern	vmCvar_t		zn_smoothweight;
 extern	vmCvar_t		zn_lightning;
+extern	vmCvar_t		zn_projectiles;
 // ZNUDGE END
 
 //
@@ -1493,11 +1494,13 @@ void CG_CheckChangedPredictableEvents( playerState_t *ps );
 //
 // cg_znudge.c
 //
+float ZN_GetNudge();
 float ZN_TimeToPoint( vec3_t origin, vec3_t velocity, float gravity, vec3_t destination );
 void  ZN_PredictSimple( vec3_t origin, vec3_t velocity, float gravity, float nudge, vec3_t predicted);
 int   ZN_CheckGround( centity_t* cent, vec3_t origin, vec3_t velocity, vec3_t predictedOrigin );
 void  ZN_GetVelocity ( centity_t* cent, vec3_t velocity );
-void  ZN_PredictOrigin( centity_t* cent, float nudge, vec3_t predictedOrigin );
+void  ZN_PredictPlayer( centity_t* cent, float nudge, vec3_t predictedOrigin );
+void  ZN_PredictMissile( centity_t* cent, float nudge, vec3_t predictedOrigin );
 // ZNUDGE END
 
 

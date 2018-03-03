@@ -2,6 +2,24 @@
 
 // Routines for predicting player movement into the future.
 
+/*
+===============
+ZN_GetNudge
+
+Returns the time in seconds to nudge the current frame by.
+Nudge is your ping plus frametime.
+===============
+*/
+float ZN_GetNudge() {
+	int ping;
+	float nudge;
+
+	ping = cg.snap ? cg.snap->ping : 0;
+	nudge = (ping + cg.frametime)/1000.0;
+
+	return nudge;
+}
+
 
 /*
 ===============
@@ -208,13 +226,13 @@ void ZN_GetVelocity ( centity_t* cent, vec3_t velocity ) {
 
 /*
 ===============
-ZN_PredictOrigin
+ZN_PredictPlayer
 
 Predict's the origin of the player cent after nudge seconds
 have elapsed. This function will be improved over time...
 ===============
 */
-void ZN_PredictOrigin( centity_t* cent, float nudge, vec3_t predictedOrigin ) {
+void ZN_PredictPlayer( centity_t* cent, float nudge, vec3_t predictedOrigin ) {
 	//vec3_t mins = {-15, -15, -24}, maxs = {15, 15, 32};
 	vec3_t mins = {-13, -13, -22}, maxs = {13, 13, 30};
 	int in_water = 0;
@@ -326,6 +344,22 @@ void ZN_PredictOrigin( centity_t* cent, float nudge, vec3_t predictedOrigin ) {
 
 		was_on_ground = on_ground;
 	}
+}
+
+
+
+void ZN_PredictMissile( centity_t* cent, float nudge, vec3_t predictedOrigin ) {
+	trace_t tr;
+
+	predictedOrigin[0] = cent->lerpOrigin[0] + nudge*cent->currentState.pos.trDelta[0];
+	predictedOrigin[1] = cent->lerpOrigin[1] + nudge*cent->currentState.pos.trDelta[1];
+	predictedOrigin[2] = cent->lerpOrigin[2] + nudge*cent->currentState.pos.trDelta[2];
+
+	CG_Trace( &tr, cent->lerpOrigin, NULL, NULL, predictedOrigin, -1, MASK_SHOT );
+
+	predictedOrigin[0] = tr.endpos[0];
+	predictedOrigin[1] = tr.endpos[1];
+	predictedOrigin[2] = tr.endpos[2];
 }
 
 

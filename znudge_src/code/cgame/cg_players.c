@@ -2601,11 +2601,7 @@ void CG_Player( centity_t *cent ) {
 	else {
 		vec3_t lerpOrigin;
 		vec3_t predictedOrigin;
-		int ping;
-		float nudge;
-
-		ping = cg.snap ? cg.snap->ping : 0;
-		nudge = (ping + cg.frametime)/1000.0;
+		float nudge = ZN_GetNudge();
 
 		if (zn_drawball.integer &&
 			!(cent->currentState.powerups & (1 << PW_INVIS))) {
@@ -2629,7 +2625,7 @@ void CG_Player( centity_t *cent ) {
 		lerpOrigin[1] = cent->lerpOrigin[1];
 		lerpOrigin[2] = cent->lerpOrigin[2];
 
-		ZN_PredictOrigin( cent, nudge, predictedOrigin );
+		ZN_PredictPlayer( cent, nudge, predictedOrigin );
 
 		cent->lerpOrigin[0] = predictedOrigin[0];
 		cent->lerpOrigin[1] = predictedOrigin[1];

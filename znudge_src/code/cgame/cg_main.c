@@ -206,6 +206,7 @@ vmCvar_t	zn_climbheight;
 vmCvar_t	zn_runningspeed;
 vmCvar_t	zn_smoothweight;
 vmCvar_t	zn_lightning;
+vmCvar_t	zn_projectiles;
 // ZNUDGE END
 
 typedef struct {
@@ -336,7 +337,8 @@ static cvarTable_t cvarTable[] = { // bk001129
 	{ &zn_climbheight, "zn_climbheight", "20", CVAR_ARCHIVE},
 	{ &zn_runningspeed, "zn_runningspeed", "320", CVAR_ARCHIVE},
 	{ &zn_smoothweight, "zn_smoothweight", ".2", CVAR_ARCHIVE},
-	{ &zn_lightning, "zn_lightning", "1", CVAR_ARCHIVE}
+	{ &zn_lightning, "zn_lightning", "1", CVAR_ARCHIVE},
+	{ &zn_projectiles, "zn_projectiles", "0", CVAR_ARCHIVE}
 // ZNUDGE END
 };
 

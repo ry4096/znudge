@@ -407,6 +407,7 @@ static void CG_Missile( centity_t *cent ) {
 	entityState_t		*s1;
 	const weaponInfo_t		*weapon;
 //	int	col;
+	vec3_t origin;
 
 	s1 = &cent->currentState;
 	if ( s1->weapon > WP_NUM_WEAPONS ) {
@@ -416,6 +417,26 @@ static void CG_Missile( centity_t *cent ) {
 
 	// calculate the axis
 	VectorCopy( s1->angles, cent->lerpAngles);
+	VectorCopy( cent->lerpOrigin, origin );
+
+// ZNUDGE BEGIN
+	if ( zn_projectiles.value ) {
+		float nudge = ZN_GetNudge();
+
+		if (s1->weapon == WP_ROCKET_LAUNCHER ||
+			s1->weapon == WP_PLASMAGUN ||
+			s1->weapon == WP_BFG) {
+
+			ZN_PredictMissile( cent, nudge, origin );
+
+		}
+		else if (s1->weapon == WP_GRENADE_LAUNCHER ) {
+
+			//ZN_PredictGrenade( cent, nudge, origin );
+
+		}
+	}
+// ZNUDGE END
 
 	// add trails
 	if ( weapon->missileTrailFunc ) 
@@ -435,13 +456,13 @@ static void CG_Missile( centity_t *cent ) {
 
 	// add dynamic light
 	if ( weapon->missileDlight ) {
-		trap_R_AddLightToScene(cent->lerpOrigin, weapon->missileDlight, 
+		trap_R_AddLightToScene(origin, weapon->missileDlight, 
 			weapon->missileDlightColor[col][0], weapon->missileDlightColor[col][1], weapon->missileDlightColor[col][2] );
 	}
 */
 	// add dynamic light
 	if ( weapon->missileDlight ) {
-		trap_R_AddLightToScene(cent->lerpOrigin, weapon->missileDlight, 
+		trap_R_AddLightToScene(origin, weapon->missileDlight, 
 			weapon->missileDlightColor[0], weapon->missileDlightColor[1], weapon->missileDlightColor[2] );
 	}
 
@@ -451,13 +472,13 @@ static void CG_Missile( centity_t *cent ) {
 
 		BG_EvaluateTrajectoryDelta( &cent->currentState.pos, cg.time, velocity );
 
-		trap_S_AddLoopingSound( cent->currentState.number, cent->lerpOrigin, velocity, weapon->missileSound );
+		trap_S_AddLoopingSound( cent->currentState.number, origin, velocity, weapon->missileSound );
 	}
 
 	// create the render entity
 	memset (&ent, 0, sizeof(ent));
-	VectorCopy( cent->lerpOrigin, ent.origin);
-	VectorCopy( cent->lerpOrigin, ent.oldorigin);
+	VectorCopy( origin, ent.origin);
+	VectorCopy( origin, ent.oldorigin);
 
 	if ( cent->currentState.weapon == WP_PLASMAGUN ) {
 		ent.reType = RT_SPRITE;

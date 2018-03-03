@@ -41,6 +41,10 @@ This mod has the following cvars:
 	Make the lightning gun draw perfectly straight ahead regardless of how high
 	your ping is. 
 
+\zn_projectiles: int, 0 or 1 : default 0
+	Nudge projectiles forward by your ping. Doesn't work as well as I would like
+	so it is off by default for now.
+
 
 Other cvars you probably don't need to change:
 

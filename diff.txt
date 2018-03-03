@@ -1,3 +1,45 @@
+diff -r code/cgame/cg_ents.c ../../../Quake-III-Arena-master/code/cgame/cg_ents.c
+410d409
+< 	vec3_t origin;
+420,439d418
+< 	VectorCopy( cent->lerpOrigin, origin );
+< 
+< // ZNUDGE BEGIN
+< 	if ( zn_projectiles.value ) {
+< 		float nudge = ZN_GetNudge();
+< 
+< 		if (s1->weapon == WP_ROCKET_LAUNCHER ||
+< 			s1->weapon == WP_PLASMAGUN ||
+< 			s1->weapon == WP_BFG) {
+< 
+< 			ZN_PredictMissile( cent, nudge, origin );
+< 
+< 		}
+< 		else if (s1->weapon == WP_GRENADE_LAUNCHER ) {
+< 
+< 			//ZN_PredictGrenade( cent, nudge, origin );
+< 
+< 		}
+< 	}
+< // ZNUDGE END
+459c438
+< 		trap_R_AddLightToScene(origin, weapon->missileDlight, 
+---
+> 		trap_R_AddLightToScene(cent->lerpOrigin, weapon->missileDlight, 
+465c444
+< 		trap_R_AddLightToScene(origin, weapon->missileDlight, 
+---
+> 		trap_R_AddLightToScene(cent->lerpOrigin, weapon->missileDlight, 
+475c454
+< 		trap_S_AddLoopingSound( cent->currentState.number, origin, velocity, weapon->missileSound );
+---
+> 		trap_S_AddLoopingSound( cent->currentState.number, cent->lerpOrigin, velocity, weapon->missileSound );
+480,481c459,460
+< 	VectorCopy( origin, ent.origin);
+< 	VectorCopy( origin, ent.oldorigin);
+---
+> 	VectorCopy( cent->lerpOrigin, ent.origin);
+> 	VectorCopy( cent->lerpOrigin, ent.oldorigin);
 diff -r code/cgame/cg_local.h ../../../Quake-III-Arena-master/code/cgame/cg_local.h
 648,659d647
 < 	// ZNUDGE BEGIN
@@ -17,7 +59,7 @@ diff -r code/cgame/cg_local.h ../../../Quake-III-Arena-master/code/cgame/cg_loca
 1095,1096d1081
 < 
 < 
-1202,1212d1186
+1202,1213d1186
 < // ZNUDGE BEGIN
 < extern	vmCvar_t		znudge;
 < extern	vmCvar_t		zn_gravity;
@@ -27,9 +69,10 @@ diff -r code/cgame/cg_local.h ../../../Quake-III-Arena-master/code/cgame/cg_loca
 < extern	vmCvar_t		zn_runningspeed;
 < extern	vmCvar_t		zn_smoothweight;
 < extern	vmCvar_t		zn_lightning;
+< extern	vmCvar_t		zn_projectiles;
 < // ZNUDGE END
 < 
-1489,1501d1462
+1490,1504d1462
 < 
 < 
 < 
@@ -37,14 +80,16 @@ diff -r code/cgame/cg_local.h ../../../Quake-III-Arena-master/code/cgame/cg_loca
 < //
 < // cg_znudge.c
 < //
+< float ZN_GetNudge();
 < float ZN_TimeToPoint( vec3_t origin, vec3_t velocity, float gravity, vec3_t destination );
 < void  ZN_PredictSimple( vec3_t origin, vec3_t velocity, float gravity, float nudge, vec3_t predicted);
 < int   ZN_CheckGround( centity_t* cent, vec3_t origin, vec3_t velocity, vec3_t predictedOrigin );
 < void  ZN_GetVelocity ( centity_t* cent, vec3_t velocity );
-< void  ZN_PredictOrigin( centity_t* cent, float nudge, vec3_t predictedOrigin );
+< void  ZN_PredictPlayer( centity_t* cent, float nudge, vec3_t predictedOrigin );
+< void  ZN_PredictMissile( centity_t* cent, float nudge, vec3_t predictedOrigin );
 < // ZNUDGE END
 diff -r code/cgame/cg_main.c ../../../Quake-III-Arena-master/code/cgame/cg_main.c
-200,210d199
+200,211d199
 < // ZNUDGE BEGIN
 < vmCvar_t	znudge;
 < vmCvar_t	zn_gravity;
@@ -54,9 +99,10 @@ diff -r code/cgame/cg_main.c ../../../Quake-III-Arena-master/code/cgame/cg_main.
 < vmCvar_t	zn_runningspeed;
 < vmCvar_t	zn_smoothweight;
 < vmCvar_t	zn_lightning;
+< vmCvar_t	zn_projectiles;
 < // ZNUDGE END
 < 
-328,340c317,318
+329,342c317,318
 < 	{ &cg_trueLightning, "cg_trueLightning", "0.0", CVAR_ARCHIVE},
 < //	{ &cg_pmove_fixed, "cg_pmove_fixed", "0", CVAR_USERINFO | CVAR_ARCHIVE },
 < 
@@ -68,12 +114,13 @@ diff -r code/cgame/cg_main.c ../../../Quake-III-Arena-master/code/cgame/cg_main.
 < 	{ &zn_climbheight, "zn_climbheight", "20", CVAR_ARCHIVE},
 < 	{ &zn_runningspeed, "zn_runningspeed", "320", CVAR_ARCHIVE},
 < 	{ &zn_smoothweight, "zn_smoothweight", ".2", CVAR_ARCHIVE},
-< 	{ &zn_lightning, "zn_lightning", "1", CVAR_ARCHIVE}
+< 	{ &zn_lightning, "zn_lightning", "1", CVAR_ARCHIVE},
+< 	{ &zn_projectiles, "zn_projectiles", "0", CVAR_ARCHIVE}
 < // ZNUDGE END
 ---
 > 	{ &cg_trueLightning, "cg_trueLightning", "0.0", CVAR_ARCHIVE}
 > //	{ &cg_pmove_fixed, "cg_pmove_fixed", "0", CVAR_USERINFO | CVAR_ARCHIVE }
-1983,1993d1960
+1985,1995d1960
 < 
 < // ZNUDGE BEGIN
 < 	{
@@ -98,7 +145,7 @@ diff -r code/cgame/cg_players.c ../../../Quake-III-Arena-master/code/cgame/cg_pl
 < void CG_Player_( centity_t *cent ) {
 ---
 > void CG_Player( centity_t *cent ) {
-2582,2645d2578
+2582,2641d2578
 < 
 < 
 < 
@@ -121,11 +168,7 @@ diff -r code/cgame/cg_players.c ../../../Quake-III-Arena-master/code/cgame/cg_pl
 < 	else {
 < 		vec3_t lerpOrigin;
 < 		vec3_t predictedOrigin;
-< 		int ping;
-< 		float nudge;
-< 
-< 		ping = cg.snap ? cg.snap->ping : 0;
-< 		nudge = (ping + cg.frametime)/1000.0;
+< 		float nudge = ZN_GetNudge();
 < 
 < 		if (zn_drawball.integer &&
 < 			!(cent->currentState.powerups & (1 << PW_INVIS))) {
@@ -149,7 +192,7 @@ diff -r code/cgame/cg_players.c ../../../Quake-III-Arena-master/code/cgame/cg_pl
 < 		lerpOrigin[1] = cent->lerpOrigin[1];
 < 		lerpOrigin[2] = cent->lerpOrigin[2];
 < 
-< 		ZN_PredictOrigin( cent, nudge, predictedOrigin );
+< 		ZN_PredictPlayer( cent, nudge, predictedOrigin );
 < 
 < 		cent->lerpOrigin[0] = predictedOrigin[0];
 < 		cent->lerpOrigin[1] = predictedOrigin[1];
@@ -225,5 +268,4 @@ diff -r code/cgame/cg_weapons.c ../../../Quake-III-Arena-master/code/cgame/cg_we
 < 	if ( beam_hit ) {
 ---
 > 	if ( trace.fraction < 1.0 ) {
-Only in code/cgame: .cg_weapons.c.swp
 Only in code/cgame: cg_znudge.c
