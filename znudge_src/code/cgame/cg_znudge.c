@@ -123,7 +123,7 @@ void ZN_PredictSimple( vec3_t origin, vec3_t velocity, float gravity, float nudg
 	predicted[2] = origin[2] + velocity[2]*nudge;
 
 	if (gravity != 0.0) {
-		predicted[2] -= nudge*nudge*gravity;
+		predicted[2] -= nudge*nudge*gravity/2.0;
 	}
 }
 
