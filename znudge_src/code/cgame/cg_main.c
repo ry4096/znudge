@@ -207,6 +207,17 @@ vmCvar_t	zn_runningspeed;
 vmCvar_t	zn_smoothweight;
 vmCvar_t	zn_lightning;
 vmCvar_t	zn_projectiles;
+vmCvar_t	zn_offset;
+vmCvar_t	zn_localextend;
+vmCvar_t	zn_localprestep;
+vmCvar_t	zn_localprojectiles;
+vmCvar_t	zn_localrail;
+vmCvar_t	zn_serverrail;
+vmCvar_t	zn_bounce_factor;
+vmCvar_t	zn_stick_speed;
+vmCvar_t	zn_plane_up;
+vmCvar_t	zn_step_size;
+vmCvar_t	zn_grenade_shift;
 // ZNUDGE END
 
 typedef struct {
@@ -338,7 +349,18 @@ static cvarTable_t cvarTable[] = { // bk001129
 	{ &zn_runningspeed, "zn_runningspeed", "320", CVAR_ARCHIVE},
 	{ &zn_smoothweight, "zn_smoothweight", ".2", CVAR_ARCHIVE},
 	{ &zn_lightning, "zn_lightning", "1", CVAR_ARCHIVE},
-	{ &zn_projectiles, "zn_projectiles", "0", CVAR_ARCHIVE}
+	{ &zn_projectiles, "zn_projectiles", "1", CVAR_ARCHIVE},
+	{ &zn_offset, "zn_offset", "0", CVAR_ARCHIVE},
+	{ &zn_localextend, "zn_localextend", "50", CVAR_ARCHIVE},
+	{ &zn_localprestep, "zn_localprestep", "50", CVAR_ARCHIVE},
+	{ &zn_localprojectiles, "zn_localprojectiles", "1", CVAR_ARCHIVE},
+	{ &zn_localrail, "zn_localrail", "1", CVAR_ARCHIVE},
+	{ &zn_serverrail, "zn_serverrail", "1", CVAR_ARCHIVE},
+	{ &zn_bounce_factor, "zn_bounce_factor", ".65", CVAR_ARCHIVE},
+	{ &zn_stick_speed, "zn_stick_speed", "40", CVAR_ARCHIVE},
+	{ &zn_plane_up, "zn_plane_up", ".2", CVAR_ARCHIVE},
+	{ &zn_step_size, "zn_step_size", ".05", CVAR_ARCHIVE},
+	{ &zn_grenade_shift, "zn_grenade_shift", ".2", CVAR_ARCHIVE}
 // ZNUDGE END
 };
 
@@ -1991,6 +2013,10 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 			cg.smoothVelocities[i][1] = 0.0;
 			cg.smoothVelocities[i][2] = 0.0;
 		}
+
+		cg.fire_held = 0;
+		cg.next_fire_time = 0;
+		cg.weapon_num = 0;
 	}
 // ZNUDGE END
 }

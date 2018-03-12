@@ -432,7 +432,7 @@ static void CG_Missile( centity_t *cent ) {
 		}
 		else if (s1->weapon == WP_GRENADE_LAUNCHER ) {
 
-			//ZN_PredictGrenade( cent, nudge, origin );
+			ZN_PredictGrenade( cent, nudge, origin );
 
 		}
 	}

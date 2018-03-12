@@ -17,7 +17,7 @@ diff -r code/cgame/cg_ents.c ../../../Quake-III-Arena-master/code/cgame/cg_ents.
 < 		}
 < 		else if (s1->weapon == WP_GRENADE_LAUNCHER ) {
 < 
-< 			//ZN_PredictGrenade( cent, nudge, origin );
+< 			ZN_PredictGrenade( cent, nudge, origin );
 < 
 < 		}
 < 	}
@@ -40,8 +40,16 @@ diff -r code/cgame/cg_ents.c ../../../Quake-III-Arena-master/code/cgame/cg_ents.
 ---
 > 	VectorCopy( cent->lerpOrigin, ent.origin);
 > 	VectorCopy( cent->lerpOrigin, ent.oldorigin);
+diff -r code/cgame/cg_event.c ../../../Quake-III-Arena-master/code/cgame/cg_event.c
+927,930c927
+< // ZNUDGE BEGIN
+< 		if (zn_serverrail.integer || clientNum != cg.clientNum )
+< 			CG_RailTrail( ci, es->origin2, es->pos.trBase );
+< // ZNUDGE END
+---
+> 		CG_RailTrail( ci, es->origin2, es->pos.trBase );
 diff -r code/cgame/cg_local.h ../../../Quake-III-Arena-master/code/cgame/cg_local.h
-648,659d647
+648,664d647
 < 	// ZNUDGE BEGIN
 < 
 < 	// Provide FPS data:
@@ -52,14 +60,19 @@ diff -r code/cgame/cg_local.h ../../../Quake-III-Arena-master/code/cgame/cg_loca
 < 	// Smoothed out velocities so players don't teleport around so much.
 < 	vec3_t smoothVelocities[MAX_CLIENTS];
 < 
+< 	// Detect if fire is held and next time a shot may be fired.
+< 	int fire_held;
+< 	int next_fire_time;
+< 	int weapon_num;
+< 
 < 	// ZNUDGE END
 < 
-1085d1072
+1090d1072
 < 
-1095,1096d1081
+1100,1101d1081
 < 
 < 
-1202,1213d1186
+1207,1229d1186
 < // ZNUDGE BEGIN
 < extern	vmCvar_t		znudge;
 < extern	vmCvar_t		zn_gravity;
@@ -70,9 +83,20 @@ diff -r code/cgame/cg_local.h ../../../Quake-III-Arena-master/code/cgame/cg_loca
 < extern	vmCvar_t		zn_smoothweight;
 < extern	vmCvar_t		zn_lightning;
 < extern	vmCvar_t		zn_projectiles;
+< extern	vmCvar_t		zn_offset;
+< extern	vmCvar_t		zn_localextend;
+< extern	vmCvar_t		zn_localprestep;
+< extern	vmCvar_t		zn_localprojectiles;
+< extern	vmCvar_t		zn_localrail;
+< extern	vmCvar_t		zn_serverrail;
+< extern	vmCvar_t		zn_bounce_factor;
+< extern	vmCvar_t		zn_stick_speed;
+< extern	vmCvar_t		zn_plane_up;
+< extern	vmCvar_t		zn_step_size;
+< extern	vmCvar_t		zn_grenade_shift;
 < // ZNUDGE END
 < 
-1490,1504d1462
+1506,1522d1462
 < 
 < 
 < 
@@ -80,16 +104,18 @@ diff -r code/cgame/cg_local.h ../../../Quake-III-Arena-master/code/cgame/cg_loca
 < //
 < // cg_znudge.c
 < //
-< float ZN_GetNudge();
+< float ZN_GetNudge(void);
 < float ZN_TimeToPoint( vec3_t origin, vec3_t velocity, float gravity, vec3_t destination );
 < void  ZN_PredictSimple( vec3_t origin, vec3_t velocity, float gravity, float nudge, vec3_t predicted);
 < int   ZN_CheckGround( centity_t* cent, vec3_t origin, vec3_t velocity, vec3_t predictedOrigin );
 < void  ZN_GetVelocity ( centity_t* cent, vec3_t velocity );
 < void  ZN_PredictPlayer( centity_t* cent, float nudge, vec3_t predictedOrigin );
 < void  ZN_PredictMissile( centity_t* cent, float nudge, vec3_t predictedOrigin );
+< void  ZN_PredictGrenade( centity_t* cent, float nudge, vec3_t predictedOrigin );
+< void  ZN_CheckFireEvent(void);
 < // ZNUDGE END
 diff -r code/cgame/cg_main.c ../../../Quake-III-Arena-master/code/cgame/cg_main.c
-200,211d199
+200,222d199
 < // ZNUDGE BEGIN
 < vmCvar_t	znudge;
 < vmCvar_t	zn_gravity;
@@ -100,9 +126,20 @@ diff -r code/cgame/cg_main.c ../../../Quake-III-Arena-master/code/cgame/cg_main.
 < vmCvar_t	zn_smoothweight;
 < vmCvar_t	zn_lightning;
 < vmCvar_t	zn_projectiles;
+< vmCvar_t	zn_offset;
+< vmCvar_t	zn_localextend;
+< vmCvar_t	zn_localprestep;
+< vmCvar_t	zn_localprojectiles;
+< vmCvar_t	zn_localrail;
+< vmCvar_t	zn_serverrail;
+< vmCvar_t	zn_bounce_factor;
+< vmCvar_t	zn_stick_speed;
+< vmCvar_t	zn_plane_up;
+< vmCvar_t	zn_step_size;
+< vmCvar_t	zn_grenade_shift;
 < // ZNUDGE END
 < 
-329,342c317,318
+340,364c317,318
 < 	{ &cg_trueLightning, "cg_trueLightning", "0.0", CVAR_ARCHIVE},
 < //	{ &cg_pmove_fixed, "cg_pmove_fixed", "0", CVAR_USERINFO | CVAR_ARCHIVE },
 < 
@@ -115,12 +152,23 @@ diff -r code/cgame/cg_main.c ../../../Quake-III-Arena-master/code/cgame/cg_main.
 < 	{ &zn_runningspeed, "zn_runningspeed", "320", CVAR_ARCHIVE},
 < 	{ &zn_smoothweight, "zn_smoothweight", ".2", CVAR_ARCHIVE},
 < 	{ &zn_lightning, "zn_lightning", "1", CVAR_ARCHIVE},
-< 	{ &zn_projectiles, "zn_projectiles", "0", CVAR_ARCHIVE}
+< 	{ &zn_projectiles, "zn_projectiles", "1", CVAR_ARCHIVE},
+< 	{ &zn_offset, "zn_offset", "0", CVAR_ARCHIVE},
+< 	{ &zn_localextend, "zn_localextend", "50", CVAR_ARCHIVE},
+< 	{ &zn_localprestep, "zn_localprestep", "50", CVAR_ARCHIVE},
+< 	{ &zn_localprojectiles, "zn_localprojectiles", "1", CVAR_ARCHIVE},
+< 	{ &zn_localrail, "zn_localrail", "1", CVAR_ARCHIVE},
+< 	{ &zn_serverrail, "zn_serverrail", "1", CVAR_ARCHIVE},
+< 	{ &zn_bounce_factor, "zn_bounce_factor", ".65", CVAR_ARCHIVE},
+< 	{ &zn_stick_speed, "zn_stick_speed", "40", CVAR_ARCHIVE},
+< 	{ &zn_plane_up, "zn_plane_up", ".2", CVAR_ARCHIVE},
+< 	{ &zn_step_size, "zn_step_size", ".05", CVAR_ARCHIVE},
+< 	{ &zn_grenade_shift, "zn_grenade_shift", ".2", CVAR_ARCHIVE}
 < // ZNUDGE END
 ---
 > 	{ &cg_trueLightning, "cg_trueLightning", "0.0", CVAR_ARCHIVE}
 > //	{ &cg_pmove_fixed, "cg_pmove_fixed", "0", CVAR_USERINFO | CVAR_ARCHIVE }
-1985,1995d1960
+2007,2021d1960
 < 
 < // ZNUDGE BEGIN
 < 	{
@@ -130,6 +178,10 @@ diff -r code/cgame/cg_main.c ../../../Quake-III-Arena-master/code/cgame/cg_main.
 < 			cg.smoothVelocities[i][1] = 0.0;
 < 			cg.smoothVelocities[i][2] = 0.0;
 < 		}
+< 
+< 		cg.fire_held = 0;
+< 		cg.next_fire_time = 0;
+< 		cg.weapon_num = 0;
 < 	}
 < // ZNUDGE END
 diff -r code/cgame/cg_players.c ../../../Quake-III-Arena-master/code/cgame/cg_players.c
@@ -222,15 +274,28 @@ diff -r code/cgame/cg_view.c ../../../Quake-III-Arena-master/code/cgame/cg_view.
 < 
 < 	// ZNUDGE END
 < 
+827,832d812
+< 
+< // ZNUDGE BEGIN
+< 	// Detect and render player shots before
+< 	// they are reported back by the server.
+< 	ZN_CheckFireEvent();
+< // ZNUDGE END
 diff -r code/cgame/cg_weapons.c ../../../Quake-III-Arena-master/code/cgame/cg_weapons.c
-979d978
+210d209
+< 
+227c226
+< 
+---
+>  
+980d978
 < 	int beam_hit;
-1013,1014c1012
+1014,1015c1012
 < 	}
 < 	else {
 ---
 > 	} else {
-1032,1064d1029
+1033,1065d1029
 < 	beam_hit = trace.fraction < 1.0;
 < 
 < // ZNUDGE BEGIN
@@ -264,7 +329,7 @@ diff -r code/cgame/cg_weapons.c ../../../Quake-III-Arena-master/code/cgame/cg_we
 < 	}
 < // ZNUDGE END
 < 
-1077c1042
+1078c1042
 < 	if ( beam_hit ) {
 ---
 > 	if ( trace.fraction < 1.0 ) {

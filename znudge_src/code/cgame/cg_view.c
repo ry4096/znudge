@@ -825,6 +825,12 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 		CG_DamageBlendBlob();
 	}
 
+// ZNUDGE BEGIN
+	// Detect and render player shots before
+	// they are reported back by the server.
+	ZN_CheckFireEvent();
+// ZNUDGE END
+
 	// build the render lists
 	if ( !cg.hyperspace ) {
 		CG_AddPacketEntities();			// adter calcViewValues, so predicted player state is correct

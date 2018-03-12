@@ -41,9 +41,36 @@ This mod has the following cvars:
 	Make the lightning gun draw perfectly straight ahead regardless of how high
 	your ping is. 
 
-\zn_projectiles: int, 0 or 1 : default 0
+\zn_projectiles: int, 0 or 1 : default 1
 	Nudge projectiles forward by your ping. Doesn't work as well as I would like
 	so it is off by default for now.
+
+
+\zn_offset: milliseconds : default 0
+	Add this number to your ping when applying znudge. This is here
+	to account for other sources of delay. Setting this to 30 seems
+	to work well but it is 0 by default.
+
+
+\zn_localprojectiles : int, 0 or 1, default 1
+	When \zn_projectiles is 1, your projectile shots
+	may not become visible until they are far away from you.
+	When \zn_localprojectiles is 1, your client will display
+	your projectiles shots immediately, rather than waiting
+	for the server to report of them.
+	
+
+\zn_localrail : int, 0 or 1, default 1
+	When 1, display rail trails immediately when you fire them.
+
+
+\zn_serverrail : int, 0 or 1, default 1
+	When 1, display the delayed rail trails reported by the server,
+	after you fire them. With both \zn_localrail and
+	\zn_serverrail set to 1, you will see two rail shots,
+	for every rail you fire, one instant, and one delayed.
+	
+
 
 
 Other cvars you probably don't need to change:
@@ -66,6 +93,37 @@ Other cvars you probably don't need to change:
 \zn_runningspeed : integer : default 320
 	Assume that players will not run faster than this speed
 	when on the ground.
+
+\zn_localextend : float, default 50
+	Local projectiles will live for the duration of your ping,
+	plus this amount. Then they will disappear and the nudged projectile
+	from the server should take its place.
+
+
+\zn_localprestep : float, default 50
+	Time in milliseconds to advance projectiles by
+	the instant they are fired.
+
+
+\zn_bounce_factor : float, default .65
+	Grenades will have their velocity scaled by this amount
+	after bouncing.
+
+\zn_stick_speed : float, default 40
+	Grenades moving slower than this after bouncing on a floor
+	will stick in place.
+
+\zn_plane_up : float, default .2
+	The game considers planes with normal vector z-component higher
+	than this value to be a floor.
+
+\zn_step_size : float, default .05
+	The time step in seconds to use while predicting grenade movement.
+
+\zn_grenade_shift : float, default .2
+	This is the shift that makes grenades fire higher than you aim.
+
+
 
 
 ## FUTURE PLANS:

@@ -655,6 +655,11 @@ typedef struct {
 	// Smoothed out velocities so players don't teleport around so much.
 	vec3_t smoothVelocities[MAX_CLIENTS];
 
+	// Detect if fire is held and next time a shot may be fired.
+	int fire_held;
+	int next_fire_time;
+	int weapon_num;
+
 	// ZNUDGE END
 
 } cg_t;
@@ -1209,6 +1214,17 @@ extern	vmCvar_t		zn_runningspeed;
 extern	vmCvar_t		zn_smoothweight;
 extern	vmCvar_t		zn_lightning;
 extern	vmCvar_t		zn_projectiles;
+extern	vmCvar_t		zn_offset;
+extern	vmCvar_t		zn_localextend;
+extern	vmCvar_t		zn_localprestep;
+extern	vmCvar_t		zn_localprojectiles;
+extern	vmCvar_t		zn_localrail;
+extern	vmCvar_t		zn_serverrail;
+extern	vmCvar_t		zn_bounce_factor;
+extern	vmCvar_t		zn_stick_speed;
+extern	vmCvar_t		zn_plane_up;
+extern	vmCvar_t		zn_step_size;
+extern	vmCvar_t		zn_grenade_shift;
 // ZNUDGE END
 
 //
@@ -1494,13 +1510,15 @@ void CG_CheckChangedPredictableEvents( playerState_t *ps );
 //
 // cg_znudge.c
 //
-float ZN_GetNudge();
+float ZN_GetNudge(void);
 float ZN_TimeToPoint( vec3_t origin, vec3_t velocity, float gravity, vec3_t destination );
 void  ZN_PredictSimple( vec3_t origin, vec3_t velocity, float gravity, float nudge, vec3_t predicted);
 int   ZN_CheckGround( centity_t* cent, vec3_t origin, vec3_t velocity, vec3_t predictedOrigin );
 void  ZN_GetVelocity ( centity_t* cent, vec3_t velocity );
 void  ZN_PredictPlayer( centity_t* cent, float nudge, vec3_t predictedOrigin );
 void  ZN_PredictMissile( centity_t* cent, float nudge, vec3_t predictedOrigin );
+void  ZN_PredictGrenade( centity_t* cent, float nudge, vec3_t predictedOrigin );
+void  ZN_CheckFireEvent(void);
 // ZNUDGE END
 
 

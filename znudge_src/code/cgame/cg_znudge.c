@@ -2,6 +2,8 @@
 
 // Routines for predicting player movement into the future.
 
+#define ZN_MAX_OFFSET 1000
+
 /*
 ===============
 ZN_GetNudge
@@ -14,8 +16,14 @@ float ZN_GetNudge() {
 	int ping;
 	float nudge;
 
+	if (zn_offset.integer > ZN_MAX_OFFSET) 
+		zn_offset.integer = ZN_MAX_OFFSET;
+
+	if (zn_offset.integer < -ZN_MAX_OFFSET) 
+		zn_offset.integer = -ZN_MAX_OFFSET;
+
 	ping = cg.snap ? cg.snap->ping : 0;
-	nudge = (ping + cg.frametime)/1000.0;
+	nudge = (ping + zn_offset.integer)/1000.0;
 
 	return nudge;
 }
@@ -300,6 +308,7 @@ void ZN_PredictPlayer( centity_t* cent, float nudge, vec3_t predictedOrigin ) {
 		else {
 			// Clipped against something...
 			float travel_time;
+			float dot;
 			clips++;
 
 			travel_time = ZN_TimeToPoint( origin, velocity, gravity, trace.endpos );
@@ -328,9 +337,13 @@ void ZN_PredictPlayer( centity_t* cent, float nudge, vec3_t predictedOrigin ) {
 			//}
 
 			// Clip velocity against the plane, assuming sliding friction.
-			velocity[0] -= velocity[0]*trace.plane.normal[0];
-			velocity[1] -= velocity[1]*trace.plane.normal[1];
-			velocity[2] -= velocity[2]*trace.plane.normal[2];
+			dot = velocity[0]*trace.plane.normal[0] +
+				velocity[1]*trace.plane.normal[1] +
+				velocity[2]*trace.plane.normal[2];
+
+			velocity[0] -= dot*trace.plane.normal[0];
+			velocity[1] -= dot*trace.plane.normal[1];
+			velocity[2] -= dot*trace.plane.normal[2];
 		}
 
 		on_ground = ZN_CheckGround( cent, origin, velocity, predictedOrigin );
@@ -362,4 +375,373 @@ void ZN_PredictMissile( centity_t* cent, float nudge, vec3_t predictedOrigin ) {
 	predictedOrigin[2] = tr.endpos[2];
 }
 
+
+
+void ZN_PredictGrenade( centity_t* cent, float nudge, vec3_t predictedOrigin ) {
+	trace_t tr;
+	int clips = 0;
+	float nudge_remaining = nudge;
+	float stick_speed_sq = zn_stick_speed.value*zn_stick_speed.value;
+	vec3_t origin;
+	vec3_t velocity;
+
+	origin[0] = cent->lerpOrigin[0];
+	origin[1] = cent->lerpOrigin[1];
+	origin[2] = cent->lerpOrigin[2];
+
+	velocity[0] = cent->currentState.pos.trDelta[0];
+	velocity[1] = cent->currentState.pos.trDelta[1];
+	velocity[2] = cent->currentState.pos.trDelta[2];
+
+	while ( nudge_remaining > 0.0 && clips < zn_maxclips.integer ) {
+		float nudge_step = nudge_remaining;
+
+		if (zn_step_size.value > 0.0 && nudge_step > zn_step_size.value) {
+			nudge_step = zn_step_size.value;
+		}
+
+		ZN_PredictSimple( origin, velocity, zn_gravity.value, nudge_step, predictedOrigin );
+
+		CG_Trace( &tr, origin, NULL, NULL, predictedOrigin, -1, MASK_SHOT );
+
+		if (tr.allsolid || tr.startsolid) {
+			predictedOrigin[0] = origin[0];
+			predictedOrigin[1] = origin[1];
+			predictedOrigin[2] = origin[2];
+			break;
+		}
+		else if (tr.fraction == 1.0) {
+			nudge_remaining -= nudge_step;
+
+			origin[0] = predictedOrigin[0];
+			origin[1] = predictedOrigin[1];
+			origin[2] = predictedOrigin[2];
+
+			velocity[2] -= nudge_step*zn_gravity.value;
+		}
+		else {
+			float travel_time;
+			float speed_sq;
+			float dot;
+			clips++;
+
+			travel_time = ZN_TimeToPoint( origin, velocity, zn_gravity.value, tr.endpos );
+			if (travel_time < 0.0) {
+				// Shouldn't happen.
+				travel_time = .05;
+			}
+			nudge_remaining -= travel_time;
+
+			origin[0] = predictedOrigin[0] = tr.endpos[0];
+			origin[1] = predictedOrigin[1] = tr.endpos[1];
+			origin[2] = predictedOrigin[2] = tr.endpos[2];
+
+			velocity[2] -= zn_gravity.value*travel_time;
+
+			// Reflect velocity by plane.
+			dot = velocity[0]*tr.plane.normal[0] + velocity[1]*tr.plane.normal[1] + velocity[2]*tr.plane.normal[2];
+
+			velocity[0] -= 2.0*dot*tr.plane.normal[0];
+			velocity[1] -= 2.0*dot*tr.plane.normal[1];
+			velocity[2] -= 2.0*dot*tr.plane.normal[2];
+
+			// Dampen by bounce factor.
+			velocity[0] *= zn_bounce_factor.value;
+			velocity[1] *= zn_bounce_factor.value;
+			velocity[2] *= zn_bounce_factor.value;
+
+			//VectorScale( ent->s.pos.trDelta, 0.65, ent->s.pos.trDelta );
+
+			speed_sq = velocity[0]*velocity[0] + velocity[1]*velocity[1] + velocity[2]*velocity[2];
+
+			//if ( trace->plane.normal[2] > 0.2 && VectorLength( ent->s.pos.trDelta ) < 40 ) { }
+			if ( tr.plane.normal[2] > zn_plane_up.value && speed_sq < stick_speed_sq ) {
+				// Grenade remain stationary forever here.
+				break;
+			}
+		}
+	}
+}
+
+
+// Only used for the client.
+void ZN_CalcMuzzlePoint( playerState_t* ps, vec3_t forward, vec3_t right, vec3_t up, vec3_t muzzlePoint ) {
+
+	AngleVectors (ps->viewangles, forward, right, up);
+
+	VectorCopy( ps->origin, muzzlePoint );
+	muzzlePoint[2] += ps->viewheight;
+	VectorMA( muzzlePoint, 14, forward, muzzlePoint );
+
+	// Compatibility with game.
+	SnapVector( muzzlePoint );
+}
+
+
+
+
+localEntity_t* ZN_LocalProjectile( playerState_t* ps, float speed ) {
+	localEntity_t	*le;
+	refEntity_t		*re;
+	vec3_t			forward, right, up, muzzlePoint;
+
+	int lifetime = (int)(ZN_GetNudge() * 1000.0) + zn_localextend.integer;
+
+	ZN_CalcMuzzlePoint( ps, forward, right, up, muzzlePoint );
+
+	le = CG_AllocLocalEntity();
+	re = &le->refEntity;
+
+	le->leType = LE_FRAGMENT;
+	le->startTime = cg.time;
+	le->endTime = le->startTime + lifetime;
+
+	le->pos.trType = TR_LINEAR;
+	le->pos.trTime = cg.time - zn_localprestep.integer;
+
+	VectorCopy( muzzlePoint, re->origin );
+	VectorCopy( muzzlePoint, re->oldorigin );
+	VectorCopy( re->origin, le->pos.trBase );
+	VectorScale( forward, speed, le->pos.trDelta );
+	SnapVector( le->pos.trDelta );
+
+	le->bounceFactor = 0.0;
+
+	le->angles.trType = TR_STATIONARY;
+	VectorCopy( ps->viewangles, le->angles.trBase );
+
+	le->leFlags = 0;
+	le->leBounceSoundType = LEBS_NONE;
+	le->leMarkType = LEMT_NONE;
+
+	AnglesToAxis( ps->viewangles, re->axis );
+
+	return le;
+}
+
+
+localEntity_t* ZN_LocalGrenade( playerState_t* ps, float speed, int weapon_num ) {
+	const weaponInfo_t *weapon = &cg_weapons[ weapon_num ];
+
+	localEntity_t	*le;
+	refEntity_t		*re;
+	vec3_t			forward, right, up, muzzlePoint;
+
+	int lifetime = (int)(ZN_GetNudge() * 1000.0) + zn_localextend.integer;
+
+	ZN_CalcMuzzlePoint( ps, forward, right, up, muzzlePoint );
+	
+	forward[2] += zn_grenade_shift.value;
+	VectorNormalize( forward );
+
+	le = CG_AllocLocalEntity();
+	re = &le->refEntity;
+
+	le->leType = LE_FRAGMENT;
+	le->startTime = cg.time;
+	le->endTime = le->startTime + lifetime;
+
+	le->pos.trType = TR_GRAVITY;
+	le->pos.trTime = cg.time - zn_localprestep.integer;
+
+	VectorCopy( muzzlePoint, re->origin );
+	VectorCopy( muzzlePoint, re->oldorigin );
+	VectorCopy( re->origin, le->pos.trBase );
+	VectorScale( forward, speed, le->pos.trDelta );
+	SnapVector( le->pos.trDelta );
+
+	le->bounceFactor = zn_bounce_factor.value;
+
+	le->angles.trType = TR_LINEAR;
+	VectorCopy( ps->viewangles, le->angles.trBase );
+
+	le->leFlags = LEF_TUMBLE;
+	le->leBounceSoundType = LEBS_NONE;
+	le->leMarkType = LEMT_NONE;
+
+	AnglesToAxis( ps->viewangles, re->axis );
+
+	re->reType = RT_MODEL;
+	re->skinNum = cg.clientFrame & 1;
+	re->hModel = weapon->missileModel;
+	re->renderfx = weapon->missileRenderfx | RF_NOSHADOW;
+
+
+	return le;
+}
+
+
+
+void ZN_LocalPlasma( playerState_t* ps, float speed ) {
+	localEntity_t	*le = ZN_LocalProjectile( ps, speed );
+	refEntity_t		*re;
+	re = &le->refEntity;
+
+	re->reType = RT_SPRITE;
+	re->radius = 16;
+	re->rotation = 0;
+	re->customShader = cgs.media.plasmaBallShader;
+}
+
+
+void ZN_LocalMissile( playerState_t* ps, float speed, int weapon_num ) {
+	const weaponInfo_t *weapon = &cg_weapons[ weapon_num ];
+
+	localEntity_t	*le = ZN_LocalProjectile( ps, speed );
+	refEntity_t		*re;
+	re = &le->refEntity;
+
+	re->reType = RT_MODEL;
+	re->skinNum = cg.clientFrame & 1;
+	re->hModel = weapon->missileModel;
+	re->renderfx = weapon->missileRenderfx | RF_NOSHADOW;
+}
+
+
+void ZN_LocalRail( playerState_t* ps ) {
+	clientInfo_t* ci = &cgs.clientinfo[ cg.clientNum ];
+	vec3_t	forward, right, up, muzzlePoint;
+	vec3_t start;
+	vec3_t end;
+	trace_t trace;
+
+	ZN_CalcMuzzlePoint( ps, forward, right, up, muzzlePoint );
+
+	// Match offset in game code.
+	VectorMA( muzzlePoint, 4, right, start );
+	VectorMA( start, -1, up, start );
+
+	VectorMA( muzzlePoint, 8192, forward, end );
+
+	CG_Trace (&trace, muzzlePoint, NULL, NULL, end, cg.clientNum, CONTENTS_SOLID );
+	VectorCopy( trace.endpos, end );
+
+	CG_RailTrail( ci, start, end );
+}
+
+
+
+
+int ZN_FireDelay( playerState_t* ps, int weapon ) {
+	int delay;
+
+	switch (weapon) {
+	case WP_GAUNTLET:
+		delay = 400;
+		break;
+	case WP_LIGHTNING:
+		delay = 50;
+		break;
+	case WP_SHOTGUN:
+		delay = 1000;
+		break;
+	case WP_MACHINEGUN:
+		delay = 100;
+		break;
+	case WP_GRENADE_LAUNCHER:
+		delay = 800;
+		break;
+	case WP_ROCKET_LAUNCHER:
+		delay = 800;
+		break;
+	case WP_PLASMAGUN:
+		delay = 100;
+		break;
+	case WP_RAILGUN:
+		delay = 1500;
+		break;
+	case WP_BFG:
+		delay = 200;
+		break;
+	case WP_GRAPPLING_HOOK:
+		delay = 400;
+		break;
+#ifdef MISSIONPACK
+	case WP_NAILGUN:
+		delay = 1000;
+		break;
+	case WP_PROX_LAUNCHER:
+		delay = 800;
+		break;
+	case WP_CHAINGUN:
+		delay = 30;
+		break;
+#endif
+	}
+
+	if ( ps->powerups[PW_HASTE] ) {
+		delay /= 1.3;
+	}
+
+	return delay;
+}
+
+
+static int zn_old_weapon_time = 0;
+static int zn_old_weapon_state = 0;
+
+void ZN_CheckFireEvent() {
+	usercmd_t cmd;
+	int cmdNum;
+	int fire;
+
+	cmdNum = trap_GetCurrentCmdNumber();
+	trap_GetUserCmd( cmdNum, &cmd );
+
+	cg.fire_held = cmd.buttons & 1;
+	cg.weapon_num = cmd.weapon;
+
+	//fire = cg.fire_held && (cg.next_fire_time <= cg.time);
+
+
+	// Make this more robust, and less complicated...
+	fire = cg.fire_held && (zn_old_weapon_time <= cg.frametime) &&
+		((zn_old_weapon_state == WEAPON_READY) ||
+		 (zn_old_weapon_state == WEAPON_FIRING)) &&
+		((cg.predictedPlayerState.weaponstate == WEAPON_READY) ||
+		 (cg.predictedPlayerState.weaponstate == WEAPON_FIRING)) &&
+		//(cg.snap->ps.stats[STAT_HEALTH] > 0) &&
+		(cg.predictedPlayerState.stats[STAT_HEALTH] > 0) &&
+                //!(cg.snap->ps.pm_flags & PMF_RESPAWNED ) &&
+                !(cg.predictedPlayerState.pm_flags & PMF_RESPAWNED ) &&
+		(cg.predictedPlayerState.persistant[PERS_TEAM] != TEAM_SPECTATOR);
+
+	zn_old_weapon_time = cg.predictedPlayerState.weaponTime;
+	zn_old_weapon_state = cg.predictedPlayerState.weaponstate;
+
+/*
+	fire = cg.fire_held && cg.next_fire_time <= cg.time &&
+		(cg.predictedPlayerState.weaponstate == WEAPON_READY ||
+		 cg.predictedPlayerState.weaponstate == WEAPON_FIRING);
+*/
+
+	if (fire) {
+		float speed;
+		cg.next_fire_time = cg.time + ZN_FireDelay( &cg.predictedPlayerState, cg.weapon_num );
+
+
+		switch( cg.weapon_num ) {
+		case WP_GRENADE_LAUNCHER:
+			if (zn_projectiles.integer && zn_localprojectiles.integer)
+				ZN_LocalGrenade( &cg.predictedPlayerState, 700.0, cg.weapon_num );
+			break;
+		case WP_ROCKET_LAUNCHER:
+			if (zn_projectiles.integer && zn_localprojectiles.integer)
+				ZN_LocalMissile( &cg.predictedPlayerState, 900.0, cg.weapon_num );
+			break;
+		case WP_RAILGUN:
+			if (zn_localrail.integer)
+				ZN_LocalRail( &cg.predictedPlayerState );
+			break;
+		case WP_PLASMAGUN:
+			if (zn_projectiles.integer && zn_localprojectiles.integer)
+				ZN_LocalPlasma( &cg.predictedPlayerState, 2000.0 );
+			break;
+		case WP_BFG:
+			if (zn_projectiles.integer && zn_localprojectiles.integer)
+				ZN_LocalMissile( &cg.predictedPlayerState, 2000.0, cg.weapon_num );
+			break;
+		}
+	}
+}
 
