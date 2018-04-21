@@ -69,7 +69,11 @@ This mod has the following cvars:
 	after you fire them. With both \zn_localrail and
 	\zn_serverrail set to 1, you will see two rail shots,
 	for every rail you fire, one instant, and one delayed.
-	
+
+\zn_ping_weight : float, 0 to 1 default .05
+	Use this weight to average out the ping values. When set to a number
+	close to zero, fluctuations in ping wont affect the nudge so much.
+	When set to 1, the nudge is set to the current ping.
 
 
 

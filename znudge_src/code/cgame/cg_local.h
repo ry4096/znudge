@@ -660,6 +660,8 @@ typedef struct {
 	int next_fire_time;
 	int weapon_num;
 
+	float smooth_ping;
+
 	// ZNUDGE END
 
 } cg_t;
@@ -1225,6 +1227,7 @@ extern	vmCvar_t		zn_stick_speed;
 extern	vmCvar_t		zn_plane_up;
 extern	vmCvar_t		zn_step_size;
 extern	vmCvar_t		zn_grenade_shift;
+extern	vmCvar_t		zn_ping_weight;
 // ZNUDGE END
 
 //

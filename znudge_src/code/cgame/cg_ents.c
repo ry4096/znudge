@@ -423,6 +423,17 @@ static void CG_Missile( centity_t *cent ) {
 	if ( zn_projectiles.value ) {
 		float nudge = ZN_GetNudge();
 
+/*
+ * TODO: Have missiles fired by other players start at their normal position,
+ *       then accelerate to their nudged position. Do not do this for
+ *       projectiles fired by the player.
+ *
+		CG_Printf("ZN_Missle %d: pos.trTime %d: cg.time %d: cl %d\n",
+			cent->currentState.number,
+			cent->currentState.pos.trTime,
+			cg.time);
+*/
+
 		if (s1->weapon == WP_ROCKET_LAUNCHER ||
 			s1->weapon == WP_PLASMAGUN ||
 			s1->weapon == WP_BFG) {

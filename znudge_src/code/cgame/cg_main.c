@@ -218,6 +218,7 @@ vmCvar_t	zn_stick_speed;
 vmCvar_t	zn_plane_up;
 vmCvar_t	zn_step_size;
 vmCvar_t	zn_grenade_shift;
+vmCvar_t	zn_ping_weight;
 // ZNUDGE END
 
 typedef struct {
@@ -360,7 +361,8 @@ static cvarTable_t cvarTable[] = { // bk001129
 	{ &zn_stick_speed, "zn_stick_speed", "40", CVAR_ARCHIVE},
 	{ &zn_plane_up, "zn_plane_up", ".2", CVAR_ARCHIVE},
 	{ &zn_step_size, "zn_step_size", ".05", CVAR_ARCHIVE},
-	{ &zn_grenade_shift, "zn_grenade_shift", ".2", CVAR_ARCHIVE}
+	{ &zn_grenade_shift, "zn_grenade_shift", ".2", CVAR_ARCHIVE},
+	{ &zn_ping_weight, "zn_ping_weight", ".05", CVAR_ARCHIVE}
 // ZNUDGE END
 };
 
@@ -2017,6 +2019,8 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 		cg.fire_held = 0;
 		cg.next_fire_time = 0;
 		cg.weapon_num = 0;
+
+		cg.smooth_ping = 0.0;
 	}
 // ZNUDGE END
 }

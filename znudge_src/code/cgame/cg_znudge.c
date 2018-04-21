@@ -23,6 +23,17 @@ float ZN_GetNudge() {
 		zn_offset.integer = -ZN_MAX_OFFSET;
 
 	ping = cg.snap ? cg.snap->ping : 0;
+	if (zn_ping_weight.value <= 1.0) {
+
+		if (zn_ping_weight.value < 0.0)
+			zn_ping_weight.value = 0.0;
+
+		//CG_Printf("ZN_GetNudge: ping: %d, smooth_ping %d\n", ping, (int)cg.smooth_ping);
+
+		cg.smooth_ping = ((float)ping)*zn_ping_weight.value + cg.smooth_ping*(1.0 - zn_ping_weight.value);
+		ping = (int)cg.smooth_ping;
+	}
+
 	nudge = (ping + zn_offset.integer)/1000.0;
 
 	return nudge;
@@ -689,20 +700,19 @@ void ZN_CheckFireEvent() {
 	trap_GetUserCmd( cmdNum, &cmd );
 
 	cg.fire_held = cmd.buttons & 1;
-	cg.weapon_num = cmd.weapon;
+	//cg.weapon_num = cmd.weapon;
+	cg.weapon_num = cg.predictedPlayerState.weapon;
 
 	//fire = cg.fire_held && (cg.next_fire_time <= cg.time);
 
-
 	// Make this more robust, and less complicated...
 	fire = cg.fire_held && (zn_old_weapon_time <= cg.frametime) &&
+		cg.predictedPlayerState.ammo[cg.weapon_num] > 0 &&
 		((zn_old_weapon_state == WEAPON_READY) ||
 		 (zn_old_weapon_state == WEAPON_FIRING)) &&
 		((cg.predictedPlayerState.weaponstate == WEAPON_READY) ||
 		 (cg.predictedPlayerState.weaponstate == WEAPON_FIRING)) &&
-		//(cg.snap->ps.stats[STAT_HEALTH] > 0) &&
 		(cg.predictedPlayerState.stats[STAT_HEALTH] > 0) &&
-                //!(cg.snap->ps.pm_flags & PMF_RESPAWNED ) &&
                 !(cg.predictedPlayerState.pm_flags & PMF_RESPAWNED ) &&
 		(cg.predictedPlayerState.persistant[PERS_TEAM] != TEAM_SPECTATOR);
 
