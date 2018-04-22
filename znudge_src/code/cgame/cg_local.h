@@ -661,6 +661,7 @@ typedef struct {
 	int weapon_num;
 
 	float smooth_ping;
+	float nudge;
 
 	// ZNUDGE END
 

@@ -2021,6 +2021,7 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 		cg.weapon_num = 0;
 
 		cg.smooth_ping = 0.0;
+		cg.nudge = 0.0;
 	}
 // ZNUDGE END
 }

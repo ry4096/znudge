@@ -829,6 +829,7 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	// Detect and render player shots before
 	// they are reported back by the server.
 	ZN_CheckFireEvent();
+	cg.nudge = ZN_GetNudge();
 // ZNUDGE END
 
 	// build the render lists

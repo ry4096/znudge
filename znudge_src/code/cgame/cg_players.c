@@ -2601,7 +2601,7 @@ void CG_Player( centity_t *cent ) {
 	else {
 		vec3_t lerpOrigin;
 		vec3_t predictedOrigin;
-		float nudge = ZN_GetNudge();
+		float nudge = cg.nudge;
 
 		if (zn_drawball.integer &&
 			!(cent->currentState.powerups & (1 << PW_INVIS))) {

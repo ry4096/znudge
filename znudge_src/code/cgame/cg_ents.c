@@ -421,7 +421,7 @@ static void CG_Missile( centity_t *cent ) {
 
 // ZNUDGE BEGIN
 	if ( zn_projectiles.value ) {
-		float nudge = ZN_GetNudge();
+		float nudge = cg.nudge;
 
 /*
  * TODO: Have missiles fired by other players start at their normal position,

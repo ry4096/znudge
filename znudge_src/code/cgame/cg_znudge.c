@@ -496,7 +496,7 @@ localEntity_t* ZN_LocalProjectile( playerState_t* ps, float speed ) {
 	refEntity_t		*re;
 	vec3_t			forward, right, up, muzzlePoint;
 
-	int lifetime = (int)(ZN_GetNudge() * 1000.0) + zn_localextend.integer;
+	int lifetime = (int)(cg.nudge * 1000.0) + zn_localextend.integer;
 
 	ZN_CalcMuzzlePoint( ps, forward, right, up, muzzlePoint );
 
@@ -538,7 +538,7 @@ localEntity_t* ZN_LocalGrenade( playerState_t* ps, float speed, int weapon_num )
 	refEntity_t		*re;
 	vec3_t			forward, right, up, muzzlePoint;
 
-	int lifetime = (int)(ZN_GetNudge() * 1000.0) + zn_localextend.integer;
+	int lifetime = (int)(cg.nudge * 1000.0) + zn_localextend.integer;
 
 	ZN_CalcMuzzlePoint( ps, forward, right, up, muzzlePoint );
 	
