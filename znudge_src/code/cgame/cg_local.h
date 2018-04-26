@@ -663,6 +663,8 @@ typedef struct {
 	float smooth_ping;
 	float nudge;
 
+	int last_proj_trail_time;
+
 	// ZNUDGE END
 
 } cg_t;
@@ -1229,6 +1231,9 @@ extern	vmCvar_t		zn_plane_up;
 extern	vmCvar_t		zn_step_size;
 extern	vmCvar_t		zn_grenade_shift;
 extern	vmCvar_t		zn_ping_weight;
+extern	vmCvar_t		zn_proj_trail;
+extern	vmCvar_t		zn_proj_trail_rate;
+extern	vmCvar_t		zn_proj_trail_life;
 // ZNUDGE END
 
 //
@@ -1523,6 +1528,7 @@ void  ZN_PredictPlayer( centity_t* cent, float nudge, vec3_t predictedOrigin );
 void  ZN_PredictMissile( centity_t* cent, float nudge, vec3_t predictedOrigin );
 void  ZN_PredictGrenade( centity_t* cent, float nudge, vec3_t predictedOrigin );
 void  ZN_CheckFireEvent(void);
+void ZN_DrawTrail (vec3_t color, int lifetime, vec3_t start, vec3_t end);
 // ZNUDGE END
 
 

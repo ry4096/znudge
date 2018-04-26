@@ -755,3 +755,49 @@ void ZN_CheckFireEvent() {
 	}
 }
 
+/*
+==========================
+ZN_DrawTrail
+
+Simplified CG_RailTrail
+==========================
+*/
+void ZN_DrawTrail (vec3_t color, int lifetime, vec3_t start, vec3_t end) {
+	localEntity_t *le;
+	refEntity_t   *re;
+ 
+	le = CG_AllocLocalEntity();
+	re = &le->refEntity;
+ 
+	le->leType = LE_FADE_RGB;
+	le->startTime = cg.time;
+	le->endTime = cg.time + lifetime;
+	le->lifeRate = 1.0 / (le->endTime - le->startTime);
+
+	if (!cgs.media.railCoreShader) {
+		// This should be done somewhere else...
+		cgs.media.railCoreShader = trap_R_RegisterShader( "railCore" );
+	}
+
+	re->shaderTime = cg.time / 1000.0f;
+	re->reType = RT_RAIL_CORE;
+	re->customShader = cgs.media.railCoreShader;
+ 
+	VectorCopy(start, re->origin);
+	VectorCopy(end, re->oldorigin);
+ 
+	re->shaderRGBA[0] = color[0] * 255;
+	re->shaderRGBA[1] = color[1] * 255;
+	re->shaderRGBA[2] = color[2] * 255;
+	re->shaderRGBA[3] = 255;
+
+	le->color[0] = color[0] * 0.75;
+	le->color[1] = color[1] * 0.75;
+	le->color[2] = color[2] * 0.75;
+	le->color[3] = 1.0f;
+
+	AxisClear( re->axis );
+}
+
+
+

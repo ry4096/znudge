@@ -70,11 +70,15 @@ This mod has the following cvars:
 	\zn_serverrail set to 1, you will see two rail shots,
 	for every rail you fire, one instant, and one delayed.
 
-\zn_ping_weight : float, 0 to 1 default .05
+\zn_ping_weight : float, 0 to 1, default .05
 	Use this weight to average out the ping values. When set to a number
 	close to zero, fluctuations in ping wont affect the nudge so much.
 	When set to 1, the nudge is set to the current ping.
 
+\zn_proj_trail : int, 0 or 1, default 1
+	When set to 1, draws a rail trail behind projectiles
+	to show how much they have been nudged from their original
+	position. 
 
 
 Other cvars you probably don't need to change:
@@ -126,6 +130,12 @@ Other cvars you probably don't need to change:
 
 \zn_grenade_shift : float, default .2
 	This is the shift that makes grenades fire higher than you aim.
+
+\zn_proj_trail_rate : float, default .02
+	Time in seconds to wait before drawing a new proj trail.
+
+\zn_proj_trail_life: float, default 3.0
+	The lifetime of a proj trail is this number times zn_proj_trail_rate
 
 
 

@@ -219,6 +219,9 @@ vmCvar_t	zn_plane_up;
 vmCvar_t	zn_step_size;
 vmCvar_t	zn_grenade_shift;
 vmCvar_t	zn_ping_weight;
+vmCvar_t	zn_proj_trail;
+vmCvar_t	zn_proj_trail_rate;
+vmCvar_t	zn_proj_trail_life;
 // ZNUDGE END
 
 typedef struct {
@@ -362,7 +365,10 @@ static cvarTable_t cvarTable[] = { // bk001129
 	{ &zn_plane_up, "zn_plane_up", ".2", CVAR_ARCHIVE},
 	{ &zn_step_size, "zn_step_size", ".05", CVAR_ARCHIVE},
 	{ &zn_grenade_shift, "zn_grenade_shift", ".2", CVAR_ARCHIVE},
-	{ &zn_ping_weight, "zn_ping_weight", ".05", CVAR_ARCHIVE}
+	{ &zn_ping_weight, "zn_ping_weight", ".05", CVAR_ARCHIVE},
+	{ &zn_proj_trail, "zn_proj_trail", "1", CVAR_ARCHIVE},
+	{ &zn_proj_trail_rate, "zn_proj_trail_rate", ".02", CVAR_ARCHIVE},
+	{ &zn_proj_trail_life, "zn_proj_trail_life", "3.0", CVAR_ARCHIVE}
 // ZNUDGE END
 };
 
@@ -2022,6 +2028,8 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 
 		cg.smooth_ping = 0.0;
 		cg.nudge = 0.0;
+
+		cg.last_proj_trail_time = 0;
 	}
 // ZNUDGE END
 }

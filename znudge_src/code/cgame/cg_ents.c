@@ -446,6 +446,37 @@ static void CG_Missile( centity_t *cent ) {
 			ZN_PredictGrenade( cent, nudge, origin );
 
 		}
+
+		if (zn_proj_trail.integer &&
+			cg.time >= cg.last_proj_trail_time + (int)(zn_proj_trail_rate.value*1000.0)) {
+
+			vec3_t color;
+			int trail_life = zn_proj_trail_rate.value*1000.0*zn_proj_trail_life.value;
+
+			switch(s1->weapon) {
+			case WP_ROCKET_LAUNCHER:
+				color[0] = 1.0;
+				color[1] = 1.0;
+				color[2] = 0.0;
+				break;
+			case WP_PLASMAGUN:
+				color[0] = 0.0;
+				color[1] = 1.0;
+				color[2] = 1.0;
+				break;
+			case WP_BFG:
+				color[0] = 0.0;
+				color[1] = 1.0;
+				color[2] = 0.0;
+				break;
+			default: //WP_GRENADE_LAUNCHER:
+				color[0] = 1.0;
+				color[1] = 1.0;
+				color[2] = 1.0;
+			}
+
+			ZN_DrawTrail(color, trail_life, cent->lerpOrigin, origin);
+		}
 	}
 // ZNUDGE END
 

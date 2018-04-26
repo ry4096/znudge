@@ -892,6 +892,13 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 		CG_Printf( "cg.clientFrame:%i\n", cg.clientFrame );
 	}
 
+// ZNUDGE BEGIN
+	if (cg.time >= cg.last_proj_trail_time + (zn_proj_trail_rate.value*1000.0)) {
+		cg.last_proj_trail_time = cg.time;
+	}
+// ZNUDGE END
+
+
 
 }
 
