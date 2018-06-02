@@ -725,19 +725,32 @@ void ZN_CheckFireEvent() {
 		 cg.predictedPlayerState.weaponstate == WEAPON_FIRING);
 */
 
+	// Override for funny gauntlet effects.
+	if (zn_gauntlet_effects.integer != 1 &&
+		cg.weapon_num == WP_GAUNTLET &&
+		cg.fire_held) {
+		fire = 1;
+	}
+
 	if (fire) {
 		float speed;
+		int weapon_effects;
+
 		cg.next_fire_time = cg.time + ZN_FireDelay( &cg.predictedPlayerState, cg.weapon_num );
 
+		weapon_effects = cg.weapon_num;
+		if ( weapon_effects == WP_GAUNTLET ) {
+			weapon_effects = zn_gauntlet_effects.integer;
+		}
 
-		switch( cg.weapon_num ) {
+		switch( weapon_effects ) {
 		case WP_GRENADE_LAUNCHER:
 			if (zn_projectiles.integer && zn_localprojectiles.integer)
-				ZN_LocalGrenade( &cg.predictedPlayerState, 700.0, cg.weapon_num );
+				ZN_LocalGrenade( &cg.predictedPlayerState, 700.0, weapon_effects );
 			break;
 		case WP_ROCKET_LAUNCHER:
 			if (zn_projectiles.integer && zn_localprojectiles.integer)
-				ZN_LocalMissile( &cg.predictedPlayerState, 900.0, cg.weapon_num );
+				ZN_LocalMissile( &cg.predictedPlayerState, 900.0, weapon_effects );
 			break;
 		case WP_RAILGUN:
 			if (zn_localrail.integer)
@@ -749,7 +762,7 @@ void ZN_CheckFireEvent() {
 			break;
 		case WP_BFG:
 			if (zn_projectiles.integer && zn_localprojectiles.integer)
-				ZN_LocalMissile( &cg.predictedPlayerState, 2000.0, cg.weapon_num );
+				ZN_LocalMissile( &cg.predictedPlayerState, 2000.0, weapon_effects );
 			break;
 		}
 	}

@@ -222,6 +222,7 @@ vmCvar_t	zn_ping_weight;
 vmCvar_t	zn_proj_trail;
 vmCvar_t	zn_proj_trail_rate;
 vmCvar_t	zn_proj_trail_life;
+vmCvar_t	zn_gauntlet_effects;
 // ZNUDGE END
 
 typedef struct {
@@ -368,7 +369,8 @@ static cvarTable_t cvarTable[] = { // bk001129
 	{ &zn_ping_weight, "zn_ping_weight", ".05", CVAR_ARCHIVE},
 	{ &zn_proj_trail, "zn_proj_trail", "1", CVAR_ARCHIVE},
 	{ &zn_proj_trail_rate, "zn_proj_trail_rate", ".02", CVAR_ARCHIVE},
-	{ &zn_proj_trail_life, "zn_proj_trail_life", "3.0", CVAR_ARCHIVE}
+	{ &zn_proj_trail_life, "zn_proj_trail_life", "3.0", CVAR_ARCHIVE},
+	{ &zn_gauntlet_effects, "zn_gauntlet_effects", "1", CVAR_ARCHIVE}
 // ZNUDGE END
 };
 

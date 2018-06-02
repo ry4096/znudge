@@ -1234,6 +1234,7 @@ extern	vmCvar_t		zn_ping_weight;
 extern	vmCvar_t		zn_proj_trail;
 extern	vmCvar_t		zn_proj_trail_rate;
 extern	vmCvar_t		zn_proj_trail_life;
+extern	vmCvar_t		zn_gauntlet_effects;
 // ZNUDGE END
 
 //

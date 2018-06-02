@@ -137,6 +137,11 @@ Other cvars you probably don't need to change:
 \zn_proj_trail_life: float, default 3.0
 	The lifetime of a proj trail is this number times zn_proj_trail_rate
 
+\zn_gauntlet_effects : integer, default 1
+	There was a fun bug that caused gauntlet to look like it was shooting missiles or rails.
+	The bug is fixed now, so you can use this option to see it.
+	\zn_gauntlet_effects 7 will make it look like gauntlet shoots
+	a curtain of rails.
 
 
 
