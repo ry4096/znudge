@@ -47,7 +47,11 @@ DIFF_FILE = ../diff.txt
 CGAME_SRC = code/cgame
 ORIG_CGAME = ../../../Quake-III-Arena-master/code/cgame
 
-all : ${PAK}
+all : make_dirs ${PAK}
+
+make_dirs :
+	mkdir -p ../vm
+	mkdir -p ../build/cgame
 
 diff : 
 	- diff -r ${CGAME_SRC} ${ORIG_CGAME} > ${DIFF_FILE}
