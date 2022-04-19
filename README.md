@@ -144,18 +144,12 @@ Other cvars you probably don't need to change:
 	a curtain of rails.
 
 
-
 ## FUTURE PLANS:
 
 This mod can be improved by predicting player movement more accurately.
 In this first version, it just assumes players move in a straight line forever
 when running, and don't steer in midair when flying. If you have any ideas,
 you are more than welcome to send them to me, or to try them out yourself.
-
-
-## AUTHOR:
-
-I am the quake player, ///y///. You can contact me by email: ry4096@gmail.com
 
 ## LICENSE:
 
@@ -167,6 +161,3 @@ GPL. This mod was created by modifying the code provided in
 I had difficulty using the q3lcc and q3asm provided in ID's source release
 so I used the ones from [ioquake3](https://github.com/ioquake/ioq3) instead.
 Once you have q3lcc and q3asm, make sure they are in the path and then run make.
-
-
-
